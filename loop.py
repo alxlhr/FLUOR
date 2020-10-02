@@ -1,6 +1,7 @@
 import numpy as np
 import speed
 
+
 def ray_step(i,j,ds,state) :
 
     """f(tn,yn)"""
@@ -78,7 +79,6 @@ def ray_step(i,j,ds,state) :
     dX_4 = - 1/C_4**2 * dcdr_4
     dY_4 = - 1/C_4**2 * dcdz_4
 
-
     #i+1
     state.r[i+1,j] = state.r[i,j] + ds/6 * (dr_1 + 2*dr_2 + 2*dr_3 + dr_4)
     state.z[i+1,j] = state.z[i,j] + ds/6 * (dz_1 + 2*dz_2 + 2*dz_3 + dz_4)
@@ -154,13 +154,5 @@ def ray_step(i,j,ds,state) :
     state.T[i+1,j] = state.T[i,j] + ds/6 * (dT_1 + 2*dT_2 + 2*dT_3 + dT_4)
 
     state.angle[i+1,j] = np.arctan((state.z[i+1,j] - state.z[i,j])/(state.r[i+1,j] - state.r[i,j]))
-
-    #Ray normal and tangent
-    #nx = -C_*Y_
-    #nz = C_*X_
-    #tx = C_*X_
-    #tz = C_*Y_
-    #nx[np.isnan(nx)] = 0
-    #nz[np.isnan(nz)] = 0
 
     state.C[i+1,j] = speed.get_speed(state.z[i+1,j], state.r[i+1,j], state.f_interp, state.s_dim)

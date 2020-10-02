@@ -65,21 +65,7 @@ def GenerateRandom(z,x, state) :
 		c = Munk_c(z,x)
 
 	if state.s_dim == 1 :
-		c = c[:,0]
-
-		plt.figure(figsize = (8,12))
-		plt.plot(c,z,'b',linewidth = 2)
-		plt.ylim(5000,0)
-		plt.xlabel('\\textbf{sound speed (m/s)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
-		plt.ylabel('\\textbf{depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
-		plt.xticks(fontsize = 17)
-		plt.yticks(fontsize = 17)
-		plt.tick_params(width = 2, length = 4)
-		plt.grid()
-		#plt.tight_layout()
-
-		plt.show()
-
+                c = c[:,0]
 
 	if state.speed_rand == True :
 		#np.random.seed(0)

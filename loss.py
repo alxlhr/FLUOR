@@ -1,5 +1,6 @@
 from numba import jit
 import numpy as np
+import fortran_loss as floss
 
 def calc_normals(state) :
     state.tx = state.C*state.X
@@ -11,8 +12,17 @@ def calc_normals(state) :
 def calc_TL(state) :
     state.W = np.abs(state.q * state.dangle0[np.newaxis,:])
     state.P = np.zeros((state.Lz,state.Lr))
+    zz = np.linspace(state.zmin,state.zmax,state.Lz)
+    rr = np.linspace(state.rmin,state.rmax,state.Lr)
+    R, Z = np.meshgrid(rr,zz)
 
-    loop(state)
+    print('shape R', np.shape(R))
+
+    if state.use_fortran == 1 :
+        #floss.loop(state.W, R, Z, state.r, state.z, state.nx, state.nz, state.tz, state.T, state.q, state.P)
+        state.P = floss.loop(q = state.q, t = state.T, tz = state.tz, nz = state.nz, nx = state.nx, z = state.z, r = state.r, zz = Z, rr = R, w = state.W, lr = state.Lr, lz = state.Lz, nr = state.nr, nmax = state.n_max, f = state.f)
+    else :
+        loop(state)
 
     state.TL = -20*np.log10(4*np.pi*np.abs(state.P))
     state.TL[np.isnan(state.TL)] = 120

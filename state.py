@@ -54,3 +54,7 @@ class state(object) :
         self.load_c = param['load_c']
 
         self.s_dim = param['speed_dim']
+
+        self.use_fortran = param['use_fortran']
+        
+        self.rd_bathy = param['range_dependent_bathy']

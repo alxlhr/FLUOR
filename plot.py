@@ -1,12 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-from os import *
-import sys
-sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
-from readshd import *
-from plotray import *
-from read_arrivals_asc import *
+#from os import *
+#import sys
+#sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
+#from readshd import *
+#from plotray import *
+#from read_arrivals_asc import *
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -23,14 +23,19 @@ def show(state) :
         plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
         #plotray('../Code/MunkB_ray.ray')
-        plt.ylim(5000,0)
-        plt.xlim(0,150)
+        plt.ylim(np.max(state.zmax),0)
+        plt.xlim(0,state.rmax/1000)
         plt.plot(state.r/1000,state.z,'k', linewidth = '2')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
+
+        if state.rd_bathy == 1 :
+            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
+            plt.plot(state.zmax_r/1000, state.zmax, 'ko')
+
         plt.grid()
         #plt.title("Bellhop (black) vs Alex (red) - Munk profile")
 
@@ -44,7 +49,7 @@ def show(state) :
         """
 
     if state.exp == "TL" :
-
+        """
         system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_Coh_SGB")
 
         filename = '../Code/MunkB_Coh_SGB.shd'
@@ -81,7 +86,7 @@ def show(state) :
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
         plt.ylim(Dmax,0)
-
+        """
 
 
         zz = np.linspace(state.zmin,state.zmax,state.Lz)
@@ -102,7 +107,7 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.ylim(state.zmax,state.zmin)
         plt.xlim(state.rmin,state.rmax/1000)
-
+        """
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)
         cbar=plt.colorbar()
@@ -116,9 +121,9 @@ def show(state) :
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
-
+        """
     if state.exp == 'A' :
-
+        """
         system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_Arr")
 
         Arr, Pos = read_arrivals_asc('../Code/MunkB_Arr.arr', 100 )
@@ -151,7 +156,7 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.legend(prop={'size': 20, 'weight':'bold'}, loc = 'upper center')
         plt.grid()
-
+        """
         """
         print('eigenrays : ', state.eigen_ray)
         print('from bellhop : ',Narr)

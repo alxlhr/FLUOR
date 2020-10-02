@@ -4,11 +4,11 @@ import os.path as path
 import os
 
 def save(state, params) :
-    if state.speed_rand == 1 or state.speed_mean == 1:
-        dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/2D_arr/'
-    else :
+    #if state.speed_rand == 1 or state.speed_mean == 1:
+        #dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/2D_arr/'
+    #else :
         #dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/rec_c_500_100_n3/'
-        dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/2D_arr/'
+        #dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/2D_arr/'
 
     if (path.exists(dir) == False) :
         os.mkdir(dir)
