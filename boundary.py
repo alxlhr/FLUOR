@@ -8,10 +8,10 @@ def apply(i,state) :
         z_bot = state.zmax
         zM = (state.z[i+1,:] > z_bot)
 
-        nz_bt_bdy = -1
-        tx_bt_bdy = -1
-        nx_bt_bdy = 0
-        tz_bt_bdy = 0
+        nz_bt_bdy = -1 * np.ones_like(state.z[i+1,:])
+        tx_bt_bdy = -1 * np.ones_like(state.z[i+1,:])
+        nx_bt_bdy = np.zeros_like(state.z[i+1,:])
+        tz_bt_bdy = np.zeros_like(state.z[i+1,:])
 
     elif state.rd_bathy == 1 :
 
@@ -19,33 +19,31 @@ def apply(i,state) :
         bthy_m = np.argmin(state.zmax_r[:,None] < state.r[i+1,:],axis = 0)-1
         bthy_M = bthy_m + 1 #(state.zmax_r[:,None] > state.r[i+1,:])
 
-        print(bthy_m)
+        dzmax = state.zmax[bthy_M] - state.zmax[bthy_m]
+        drmax = state.zmax_r[bthy_M] - state.zmax_r[bthy_m]
 
-        #abs for now (la pente est dans la direction de propa du rayon)
-        dzmax = np.abs(state.zmax[bthy_M] - state.zmax[bthy_m])
-        drmax = np.abs(state.zmax_r[bthy_M] - state.zmax_r[bthy_m])
-
-        alpha_r = np.arctan(dzmax/drmax)
+        alpha_r = -np.arctan(dzmax/drmax)
 
         #normal and tangent to the bathy section
         nx_bt_bdy = np.sin(alpha_r)
-        nz_bt_bdy = np.cos(alpha_r)
+        nz_bt_bdy = np.cos(alpha_r) #z > 0 upward
         tx_bt_bdy = nz_bt_bdy
         tz_bt_bdy = -nx_bt_bdy
 
-        #bottom value
+        #depth at the point (interpolate between bthy_m and bthy_M)
         A = np.abs(state.zmax_r[bthy_M] - state.r[i+1,:])
         B = np.abs(state.zmax_r[bthy_M] - state.zmax_r[bthy_m])
         C = np.abs(state.zmax[bthy_m] - state.zmax[bthy_M])
 
-        z_bot = state.zmax[bthy_M] + C*A/B
+        z_bot = np.max(np.array([state.zmax[bthy_M],state.zmax[bthy_m]])) - C*A/B #marche pô
+
+        #wikipedia linear interpolation
+        z_bot = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
+
+        r_out = state.r[i+1,:] > state.rmax
+        z_bot[r_out] = np.max(state.zmax)
 
         zM = (state.z[i+1,:] > z_bot)
-
-        nz_bt_bdy = -1
-        tx_bt_bdy = -1
-        nx_bt_bdy = 0
-        tz_bt_bdy = 0
 
     else :
         raise ValueError('Bad bathy option')
@@ -60,7 +58,12 @@ def apply(i,state) :
     #Bottom boundary
     if indM.size > 0 :
 
-        ds = (z_bot[zM] - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
+        if state.rd_bathy == 0 :
+            ds = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
+        elif state.rd_bathy == 1 :
+            ds = recalculate_step(state, i, z_bot, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy)
+
+
         loop.ray_step(i,zM,ds,state)
 
         dcdr = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],0,1, state.s_dim)
@@ -73,8 +76,8 @@ def apply(i,state) :
         tz = state.C[i+1,zM]*state.Y[i+1,zM]
 
         #z > 0 upward
-        alpha = tx*nx_bt_bdy + nz_bt_bdy*tz #t_ray * boundary normal
-        beta = tx_bt_bdy*tx + tz_bt_bdy*tz #t_ray * boundary tangent (right handed coordinate system)
+        alpha = tx*nx_bt_bdy[zM] + nz_bt_bdy[zM]*tz #t_ray * boundary normal
+        beta = tx_bt_bdy[zM]*tx + tz_bt_bdy[zM]*tz #t_ray * boundary tangent (right handed coordinate system)
 
         cn = dcdz * nz + dcdr * nx
         cs = dcdz * tz + dcdr * tx
@@ -84,8 +87,9 @@ def apply(i,state) :
 
         state.q[i+1,zM] = state.q[i+1,zM]
         state.p[i+1,zM] = state.p[i+1,zM] + state.q[i+1,zM] * N
-        state.Y[i+1,zM] = -state.Y[i+1,zM]
 
+        state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy[zM] / state.C[i+1,zM]
+        state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy[zM] / state.C[i+1,zM]
 
     #Top boundary
     if indm.size > 0 :
@@ -115,3 +119,18 @@ def apply(i,state) :
         state.p[i+1,zm] = state.p[i+1,zm] + state.q[i+1,zm] * N
 
         state.Y[i+1,zm] = -state.Y[i+1,zm]
+
+
+def recalculate_step(state, i, z_bot, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
+
+    d0_r = state.r[i,:] - state.zmax_r[bthy_m]
+    d0_z = state.z[i,:] - state.zmax[bthy_m]
+
+    de_0 = d0_r * nx_bt_bdy + d0_z * nz_bt_bdy
+
+    tx = state.C[i,:]*state.X[i,:]
+    tz = state.C[i,:]*state.Y[i,:]
+
+    ds = - de_0 / (tx*nx_bt_bdy + tz*nz_bt_bdy)
+
+    return ds[zM]

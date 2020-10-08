@@ -1,6 +1,6 @@
 from numba import jit
 import numpy as np
-import fortran_loss as floss
+#import fortran_loss as floss
 
 def calc_normals(state) :
     state.tx = state.C*state.X
@@ -12,11 +12,11 @@ def calc_normals(state) :
 def calc_TL(state) :
     state.W = np.abs(state.q * state.dangle0[np.newaxis,:])
     state.P = np.zeros((state.Lz,state.Lr))
-    zz = np.linspace(state.zmin,state.zmax,state.Lz)
+    zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
     rr = np.linspace(state.rmin,state.rmax,state.Lr)
     R, Z = np.meshgrid(rr,zz)
 
-    print('shape R', np.shape(R))
+    print('shape P', np.shape(state.P))
 
     if state.use_fortran == 1 :
         #floss.loop(state.W, R, Z, state.r, state.z, state.nx, state.nz, state.tz, state.T, state.q, state.P)
@@ -31,7 +31,7 @@ def calc_TL(state) :
 
 #@jit(nopython = True)#, parallel = True)
 def loop(state) :
-    zz = np.linspace(state.zmin,state.zmax,state.Lz)
+    zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
     rr = np.linspace(state.rmin,state.rmax,state.Lr)
     R, Z = np.meshgrid(rr,zz)
     #j = 7

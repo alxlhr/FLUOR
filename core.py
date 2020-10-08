@@ -69,6 +69,10 @@ class core(object) :
         self.state.angle = np.zeros((self.state.n_max,self.state.nr))
         self.state.m = np.zeros((self.state.n_max,self.state.nr))
         self.state.dangle0 = np.zeros((self.state.nr))
+        self.state.tx = np.zeros((self.state.n_max,self.state.nr))
+        self.state.tz = np.zeros((self.state.n_max,self.state.nr))
+        self.state.nx = np.zeros((self.state.n_max,self.state.nr))
+        self.state.nz = np.zeros((self.state.n_max,self.state.nr))
 
         self.state.X[0,:] = X0
         self.state.Y[0,:] = Y0
@@ -83,7 +87,9 @@ class core(object) :
         #rd bathy
         if self.state.rd_bathy == 1 :
             self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,4)
-            self.state.zmax = np.linspace(2000,3000,4)
+            self.state.zmax = np.linspace(5000,2000,4)
+            self.state.zmax[0:2] = np.linspace(2000,5000,2)
+            self.state.zmax[2:] = np.linspace(5000,2000,2)
 
     def check_res(self) :
         temp = self.state.dangle0 * self.state.rmax / np.cos(np.max(np.abs(self.state.angle_0)))
@@ -101,8 +107,6 @@ class core(object) :
             caustics.step(i,self.state)
             boundary.apply(i,self.state)
             #gc.collect()
-        
-
 
     def run(self) :
 
@@ -117,7 +121,7 @@ class core(object) :
             print("### Calculating Arrivals ###")
         else :
             raise NameError('Wrong exp name')
-                
+
         self.inner_loop()
 
         loss.calc_normals(self.state)

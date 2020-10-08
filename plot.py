@@ -26,6 +26,7 @@ def show(state) :
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
         plt.plot(state.r/1000,state.z,'k', linewidth = '2')
+        #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.xticks(fontsize = 17)
@@ -89,7 +90,7 @@ def show(state) :
         """
 
 
-        zz = np.linspace(state.zmin,state.zmax,state.Lz)
+        zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
         rr = np.linspace(state.rmin,state.rmax,state.Lr)
         R, Z = np.meshgrid(rr,zz)
 
@@ -105,8 +106,13 @@ def show(state) :
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
-        plt.ylim(state.zmax,state.zmin)
+        plt.ylim(np.max(state.zmax),state.zmin)
         plt.xlim(state.rmin,state.rmax/1000)
+
+        if state.rd_bathy == 1 :
+            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
+            plt.plot(state.zmax_r/1000, state.zmax, 'ko')
+
         """
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)

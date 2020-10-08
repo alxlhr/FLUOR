@@ -156,3 +156,15 @@ def ray_step(i,j,ds,state) :
     state.angle[i+1,j] = np.arctan((state.z[i+1,j] - state.z[i,j])/(state.r[i+1,j] - state.r[i,j]))
 
     state.C[i+1,j] = speed.get_speed(state.z[i+1,j], state.r[i+1,j], state.f_interp, state.s_dim)
+
+    state.tx[i+1,j] = state.C[i+1,j]*state.X[i+1,j]
+    state.tz[i+1,j] = state.C[i+1,j]*state.Y[i+1,j]
+    state.nx[i+1,j] = -state.C[i+1,j]*state.Y[i+1,j]
+    state.nz[i+1,j] = state.C[i+1,j]*state.X[i+1,j]
+
+    """
+    print("*****")
+    print(i)
+    print(state.tx[i+1,j])
+    print(state.tz[i+1,j])
+    """

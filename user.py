@@ -12,11 +12,11 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 24
+        nr = 100
 
-        param = {'nr' : nr, 'z0' : 1000, 'zmin' : 0, 'rmin' : 0, 'rmax' : 10e3, 'zmax' : 5000,
-                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 200, 'f' : 100, 'Lr' : 200, 'Lz' : 200,
-                 'exp' : "R",
+        param = {'nr' : nr, 'z0' : 1000, 'zmin' : 0, 'rmin' : 0, 'rmax' : 40e3, 'zmax' : 5000,
+                 'r0' : 0, 'angles' : (-40,40), 'ds0' : 100, 'f' : 100, 'Lr' : 200, 'Lz' : 200,
+                 'exp' : "TL",
                  'r_rcvr' : 40e3, 'z_rcvr' : 250,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code
                  'speed_rand' : 0,
