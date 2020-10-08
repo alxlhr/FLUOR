@@ -58,3 +58,4 @@ class state(object) :
         self.use_fortran = param['use_fortran']
         
         self.rd_bathy = param['range_dependent_bathy']
+        self.bathy_linterp = param['bathy_linterp']

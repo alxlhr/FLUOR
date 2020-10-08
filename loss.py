@@ -37,7 +37,7 @@ def loop(state) :
     #j = 7
     for j in range(state.nr) :
         print("beam %i / %i" %(j, state.nr), end = '\r')
-        for i in range(1,state.n_max) :
+        for i in range(1,state.imax) :
             if state.W[i,j] > 0 :
                 #coords influenced by the ray j between i and i+1
                 rec = ((R >= state.r[i-1,j]) & (R < state.r[i,j]))

@@ -25,7 +25,7 @@ def show(state) :
         #plotray('../Code/MunkB_ray.ray')
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-        plt.plot(state.r/1000,state.z,'k', linewidth = '2')
+        plt.plot(state.r/1000,state.z,'k', linewidth = '1')
         #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
@@ -34,9 +34,9 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
 
         if state.rd_bathy == 1 :
-            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
+            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '4')
             plt.plot(state.zmax_r/1000, state.zmax, 'ko')
-
+            plt.plot(state.r_c/1000, state.z_c, 'mo')
         plt.grid()
         #plt.title("Bellhop (black) vs Alex (red) - Munk profile")
 

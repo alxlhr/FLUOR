@@ -4,6 +4,7 @@ import speed
 
 def ray_step(i,j,ds,state) :
 
+
     """f(tn,yn)"""
     state.C[i,j] = speed.get_speed(state.z[i,j], state.r[i,j], state.f_interp, state.s_dim)
 

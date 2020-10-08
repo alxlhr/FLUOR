@@ -86,10 +86,11 @@ class core(object) :
 
         #rd bathy
         if self.state.rd_bathy == 1 :
-            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,4)
-            self.state.zmax = np.linspace(5000,2000,4)
-            self.state.zmax[0:2] = np.linspace(2000,5000,2)
-            self.state.zmax[2:] = np.linspace(5000,2000,2)
+            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,5000)
+            b = 250e3
+            c = 250
+            self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
+            boundary.calculate_normals(self.state)
 
     def check_res(self) :
         temp = self.state.dangle0 * self.state.rmax / np.cos(np.max(np.abs(self.state.angle_0)))

@@ -33,7 +33,7 @@ def calc_arr(state) :
 def loop(state) :
 
     for j in range(state.nr) :
-        for i in range(1,state.n_max) :
+        for i in range(1,state.imax) :
             rec = ((state.r_rcvr >= state.r[i-1,j]) & (state.r_rcvr < state.r[i,j]))
             if rec == True :
 
