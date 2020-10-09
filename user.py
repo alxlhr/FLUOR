@@ -12,10 +12,10 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 40
+        nr = 2
 
-        param = {'nr' : nr, 'z0' : 0, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 5000,
-                 'r0' : 0, 'angles' : (-60,-10), 'ds0' : 100, 'f' : 100, 'Lr' : 200, 'Lz' : 200,
+        param = {'nr' : nr, 'z0' : 130, 'zmin' : 0, 'rmin' : 0, 'rmax' : 5e3, 'zmax' : 5000,
+                 'r0' : 1100, 'angles' : (-40,40), 'ds0' : 100, 'f' : 10, 'Lr' : 200, 'Lz' : 200,
                  'exp' : "R",
                  'r_rcvr' : 40e3, 'z_rcvr' : 250,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code
@@ -34,7 +34,8 @@ def run() :
                  'load_c' : 0,
                  'use_fortran' : 0, #speedup some functions, not ready yet
                  'range_dependent_bathy' : 1, #needs to load the bathy somewhere
-                 'bathy_linterp' : 0 #interpolates linearly the bathymetry normals
+                 'bathy_linterp' : 0, #interpolates linearly the bathymetry normals
+                 'bathy_file' : '/home6/lheral/Documents/Stage_M2/gebco_2020_n38.3_s37.8_w15.3_e15.8.nc'
         }
 
         #Rays unperturbed, ds0 = 200 : OK

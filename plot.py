@@ -32,13 +32,22 @@ def show(state) :
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
+        plt.ylim(5000,0)
+        plt.xlim(0,5)
 
         if state.rd_bathy == 1 :
-            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '4')
+
+            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
             plt.plot(state.zmax_r/1000, state.zmax, 'ko')
+
             plt.plot(state.r_c/1000, state.z_c, 'mo')
+            
+            plt.plot(np.array([state.r_c, state.r_c+state.nx_bt_bdy*500])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*500]), 'm-')
+
+            plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*500])/1000, np.array([state.zmax, state.zmax+state.nz_node*500]), 'k-')
+        
         plt.grid()
-        #plt.title("Bellhop (black) vs Alex (red) - Munk profile")
+        
 
         """
         plt.figure()

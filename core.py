@@ -34,7 +34,7 @@ class core(object) :
         r_bk = np.linspace(self.state.rmin,self.state.rmax,self.state.Lr)
 
         if self.state.load_c == 1 :
-            ncf=nc.Dataset('./rec_cel_m1.nc')
+            ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
             z_int = ncf.variables['z_rec'][...]
             ncf.close()
 
@@ -86,12 +86,30 @@ class core(object) :
 
         #rd bathy
         if self.state.rd_bathy == 1 :
-            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,5000)
+            nc_bathy = nc.Dataset(self.state.bathy_file)
+            lat = nc_bathy.variables['lat'][...]
+            lon = nc_bathy.variables['lon'][...]
+            bathy = nc_bathy.variables['elevation'][...]
+
+            Lon,Lat = np.meshgrid(lon,lat)
+            L0 = np.argmin(np.abs(Lat - 38.05), axis = 0)
+            self.state.zmax = -1*bathy[L0][0,:]
+            self.state.zmax = self.state.zmax[self.state.zmax > 0]
+            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,len(self.state.zmax))
+
+            #For testing purposes
+            
             b = 250e3
             c = 250
+            
+            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,5)
             self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
+            self.state.zmax = np.linspace(5000,0,len(self.state.zmax_r))
+            
+            
+            
             boundary.calculate_normals(self.state)
-
+            
     def check_res(self) :
         temp = self.state.dangle0 * self.state.rmax / np.cos(np.max(np.abs(self.state.angle_0)))
         hz = (self.state.zmax - self.state.zmin)/self.state.Lz

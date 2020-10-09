@@ -32,7 +32,7 @@ class state(object) :
             self.r_rcvr = param['r_rcvr']
             self.z_rcvr = param['z_rcvr']
 
-        self.n_max = np.int(np.ceil(param['rmax']/param['ds0'] * 1.4))
+        self.n_max = np.int(np.ceil(param['rmax']/param['ds0'] * 1.5))
 
         #speed params
         self.speed_rand = param['speed_rand']
@@ -59,3 +59,4 @@ class state(object) :
         
         self.rd_bathy = param['range_dependent_bathy']
         self.bathy_linterp = param['bathy_linterp']
+        self.bathy_file = param['bathy_file']

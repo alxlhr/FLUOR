@@ -31,7 +31,7 @@ def Munk_c(z,x):
 	c = c.T
 	print('munk : ', np.shape(c))
 
-	return c0 * np.ones_like(z)
+	return c#c0 * np.ones_like(z)
 
 #https://stackoverflow.com/questions/20357854/how-can-i-generate-gaussian-random-process-using-matlab
 def randg(N,rL,h,cl) :
@@ -50,7 +50,7 @@ def GenerateRandom(z,x, state) :
 
 
 	if state.load_c == 1 :
-		ncf=nc.Dataset('/home/alexandre/Documents/Stage_M2/Python/EOF/rec_cel_n3_m.nc')
+		ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
 
 		if state.mean_prof == 0 :
 			c = ncf.variables['C_rec'][...]
@@ -65,7 +65,7 @@ def GenerateRandom(z,x, state) :
 		c = Munk_c(z,x)
 
 	if state.s_dim == 1 :
-		c = c[:,0]
+		c = c[0,:]
 
 	if state.speed_rand == True :
 		#np.random.seed(0)

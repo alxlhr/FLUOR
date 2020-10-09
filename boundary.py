@@ -14,7 +14,7 @@ def apply(i,state) :
         tz_bt_bdy = np.zeros_like(state.z[i+1,:])
 
     elif state.rd_bathy == 1 :
-
+        r_out = (state.r[i+1,:] > state.rmax)
         #array (1,nr) avec les points min et max de la bathy
         bthy_m = np.argmin(state.zmax_r[:,None] < state.r[i+1,:],axis = 0)-1
         bthy_M = bthy_m + 1
@@ -66,6 +66,7 @@ def apply(i,state) :
             nz_bt_bdy[r_out] = -1 #z > 0 upward
             tx_bt_bdy[r_out] = nz_bt_bdy[r_out]
             tz_bt_bdy[r_out] = -nx_bt_bdy[r_out]
+            
             
 
         if state.rd_bathy == 0 :
@@ -136,6 +137,8 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
     d0_r = state.r[i,:] - state.zmax_r[bthy_m]
     d0_z = state.z[i,:] - state.zmax[bthy_m]
 
+    #print('shape d0_r : ',np.shape(nz_bt_bdy))
+
     de_0 = d0_r * nx_bt_bdy + d0_z * nz_bt_bdy
 
     tx = state.C[i,:]*state.X[i,:]
@@ -154,8 +157,8 @@ def calculate_normals(state) :
     alpha_r = -np.arctan(dzmax/drmax)
 
     #normal to the bathy section
-    state.nx_bt_bdy = np.sin(alpha_r)
-    state.nz_bt_bdy = np.cos(alpha_r) #z > 0 upward
+    state.nx_bt_bdy = -np.sin(alpha_r)
+    state.nz_bt_bdy = -np.cos(alpha_r) #z > 0 upward
 
     #get center of the bathy sections
 
@@ -175,34 +178,51 @@ def calculate_normals(state) :
     state.nz_node[-1] = state.nz_bt_bdy[-1]
 
     
-    print(state.nx_bt_bdy)
+    #print(state.nx_bt_bdy)
     
-    for j in range(1,len(state.zmax)-2) :
-        print(j)
-        dist_bwd = np.sqrt( (state.zmax_r[j] - state.r_c[j-1])**2 + (state.zmax[j] - state.z_c[j-1])**2) 
-        dist_fwd = np.sqrt( (state.zmax_r[j] - state.r_c[j])**2 + (state.zmax[j] - state.z_c[j])**2)
- 
+    for j in range(1,len(state.zmax)-1) :
+        #print(j)
+        #should be ok :
+        dist_bwd = np.sqrt( (state.zmax_r[j] - state.r_c[j-1])**2 + (state.zmax[j] - state.z_c[j-1])**2) #distance from the node to the previous normal
+        dist_fwd = np.sqrt( (state.zmax_r[j] - state.r_c[j])**2 + (state.zmax[j] - state.z_c[j])**2) #distance from the node to its corresponding normal
 
+
+
+        #marche pas bien quand topo pas linéaire :
         state.nx_node[j] = state.nx_bt_bdy[j] * (1 - dist_bwd / (dist_bwd + dist_fwd) ) + state.nx_bt_bdy[j-1] * (dist_bwd / (dist_bwd + dist_fwd))
         state.nz_node[j] = state.nz_bt_bdy[j] * (1 - dist_bwd / (dist_bwd + dist_fwd) ) + state.nz_bt_bdy[j-1] * (dist_bwd / (dist_bwd + dist_fwd))
+        ####
 
-        print(state.nz_node)
-    print(state.nx_node**2 + state.nz_node**2)
-
+    #normalize (marche qu'a moitié ... pourquoi ?):
+    state.nx_node = state.nx_node / np.sqrt(state.nx_node**2 + state.nz_node**2)
+    state.nz_node = state.nz_node / np.sqrt(state.nx_node**2 + state.nz_node**2)  
+    """
+    print('vert normals x : ',state.nx_bt_bdy)
+    print('vert normals z : ',state.nz_bt_bdy)
+    print('nx_node : ', state.nx_node)
+    print('nz_node : ', state.nz_node)
+    print('norm : ', np.sqrt(state.nx_node**2 + state.nz_node**2))
+    """
 
 def interpolate_normals(i, state, zM, z_bot, bthy_m) :
 
+    #bthy_m : bathy section of each ray (nray,)
+    #zM : number of bounces nbounce < nray (nbounce,)
+    #bthy_m[zM] : section where the bounce occurs (nbounce,)
+    #nx_bt_bdy[bthy[zM]] : normal of the section where the bounce occurs (nbounce,)
 
-    #distance between a point and the bathy section centers
+    #distance between the two nodes
+    dist_nodes = np.sqrt((state.zmax_r[bthy_m] - state.zmax_r[bthy_m+1])**2 + (state.zmax[bthy_m] - state.zmax[bthy_m+1])**2)
+
+    #distance between a point and the nodes
     
-    dist = np.sqrt( (state.r[i+1,:][:,None] - state.r_c[None,:])**2 + (z_bot[:,None] - state.z_c[None,:])**2 )
+    dist_m = np.sqrt((state.r[i+1,:] - state.zmax_r[bthy_m])**2+(z_bot - state.zmax[bthy_m])**2)  #(nrays,)
+    dist_p =  np.sqrt((state.r[i+1,:] - state.zmax_r[bthy_m+1])**2+(z_bot - state.zmax[bthy_m+1])**2)  #(nrays,)
 
-    closest_dist = np.sort(dist,1)[:,:2]
-    closest_arg = np.argsort(dist,1)[:,:2]    
+    nx_bt_bdy = np.zeros_like(bthy_m)
+    nz_bt_bdy = np.zeros_like(bthy_m)
 
-    nx_bt_bdy = state.nx_bt_bdy[closest_arg[:,0]] * (1 - closest_dist[:,0] / (closest_dist[:,0] + closest_dist[:,1])) + state.nx_bt_bdy[closest_arg[:,1]] * (closest_dist[:,1] / (closest_dist[:,0] + closest_dist[:,1]))
-
-
-    nz_bt_bdy = state.nz_bt_bdy[closest_arg[:,0]] * (1 - closest_dist[:,0] / (closest_dist[:,0] + closest_dist[:,1])) + state.nz_bt_bdy[closest_arg[:,1]] * (closest_dist[:,1] / (closest_dist[:,0] + closest_dist[:,1]))
+    nx_bt_bdy = state.nx_node[bthy_m] * (1 - dist_p / dist_nodes) + state.nx_node[bthy_m+1] * ( dist_p  / dist_nodes)
+    nz_bt_bdy = state.nz_node[bthy_m] * (1 - dist_p / dist_nodes) + state.nz_node[bthy_m+1] * ( dist_p  / dist_nodes)
 
     return nx_bt_bdy, nz_bt_bdy
