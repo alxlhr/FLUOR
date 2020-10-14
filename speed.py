@@ -7,9 +7,9 @@ import netCDF4 as nc
 #import eddy
 
 plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "sans-serif",
-    "font.sans-serif": ["Helvetica"],
+	"text.usetex": True,
+	"font.family": "sans-serif",
+	"font.sans-serif": ["Helvetica"],
 	"font.weight": "bold",
 	"text.latex.preamble": [r'\boldmath']})
 plt.rc('axes', linewidth=2)
@@ -50,7 +50,8 @@ def GenerateRandom(z,x, state) :
 
 
 	if state.load_c == 1 :
-		ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
+		#ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
+		ncf=nc.Dataset('../rec_cel_n3_m.nc')
 
 		if state.mean_prof == 0 :
 			c = ncf.variables['C_rec'][...]
@@ -64,8 +65,8 @@ def GenerateRandom(z,x, state) :
 	else :
 		c = Munk_c(z,x)
 
-	if state.s_dim == 1 :
-		c = c[0,:]
+	#if state.s_dim == 1 :
+		#c = c[0,:]
 
 	if state.speed_rand == True :
 		#np.random.seed(0)

@@ -31,9 +31,10 @@ def calc_arr(state) :
 
 
 def loop(state) :
-
     for j in range(state.nr) :
-        for i in range(1,state.imax) :
+        for i in range(1,state.n_max) :
+            #if (state.bdy_bot[i,j] > 4 and state.bdy_top[i,j] > 4) :
+            #    continue
             rec = ((state.r_rcvr >= state.r[i-1,j]) & (state.r_rcvr < state.r[i,j]))
             if rec == True :
 
@@ -54,12 +55,14 @@ def loop(state) :
                     r_ = state.r[i-1,j] + al * (state.r[i,j] - state.r[i-1,j])
                     angle_ = state.angle[i-1,j] + al * (state.angle[i,j] - state.angle[i-1,j])
 
-                    A_ = (-1j)**state.m[i,j] * np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))
+                    A_ = state.amp[i,j]*(-1j)**state.m[i,j] * np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))
+
+                    #print(state.amp[i,j])
 
                     state.Angle_rcvr[state.eigen_ray] = np.rad2deg(angle_)
                     state.Delay_rcvr[state.eigen_ray] = T_
 
-                    state.Amp_rcvr[state.eigen_ray] = np.abs(A_)#np.abs((W_ - n_)/W_*A_)#*np.exp(1j*2*np.pi*f*T_))
+                    state.Amp_rcvr[state.eigen_ray] = np.abs(A_*np.exp(1j*state.phi[i,j]))#np.abs((W_ - n_)/W_*A_)#*np.exp(1j*2*np.pi*f*T_))
                     #state.Amp_rays[state.eigen_ray] = (W_ - n_)/W_*A_*np.exp(1j*2*np.pi*state.f*T_)
 
                     state.ray_num[state.eigen_ray] = j

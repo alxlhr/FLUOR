@@ -4,6 +4,10 @@ import speed
 
 def ray_step(i,j,ds,state) :
 
+    #print(np.shape(ds))
+    out = (state.r[i,:] < state.rmax)
+    j = j & out
+    ds = ds[j]
 
     """f(tn,yn)"""
     state.C[i,j] = speed.get_speed(state.z[i,j], state.r[i,j], state.f_interp, state.s_dim)
@@ -87,6 +91,13 @@ def ray_step(i,j,ds,state) :
     state.X[i+1,j] = state.X[i,j] + ds/6* (dX_1 + 2*dX_2 + 2*dX_3 + dX_4)
     state.Y[i+1,j] = state.Y[i,j] + ds/6* (dY_1 + 2*dY_2 + 2*dY_3 + dY_4)  #zeta
 
+    #TODO : bad practice, switch to masked array (worth it ?)
+    state.r[i+1,np.invert(out)] = np.nan
+    state.z[i+1,np.invert(out)] = np.nan
+
+    state.X[i+1,np.invert(out)] = np.nan
+    state.Y[i+1,np.invert(out)] = np.nan  #zeta
+
     #Dynamic rays
 
     """f(tn,yn)"""
@@ -162,6 +173,9 @@ def ray_step(i,j,ds,state) :
     state.tz[i+1,j] = state.C[i+1,j]*state.Y[i+1,j]
     state.nx[i+1,j] = -state.C[i+1,j]*state.Y[i+1,j]
     state.nz[i+1,j] = state.C[i+1,j]*state.X[i+1,j]
+
+    state.amp[i+1,j] = state.amp[i,j]
+    state.phi[i+1,j] = state.phi[i,j]
 
     """
     print("*****")

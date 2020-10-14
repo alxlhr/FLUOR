@@ -18,6 +18,8 @@ plt.rc('axes', linewidth=2)
 
 def show(state) :
 
+    atten = (state.amp > 0.01)
+
     if state.exp == "R" :
 
         plt.figure(figsize = (10,8))
@@ -25,29 +27,33 @@ def show(state) :
         #plotray('../Code/MunkB_ray.ray')
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-        plt.plot(state.r/1000,state.z,'k', linewidth = '1')
+        for i in range(state.nr) :
+            plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
         #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
-        plt.ylim(5000,0)
-        plt.xlim(0,5)
+        plt.ylim(np.max(state.zmax),0)
+        plt.xlim(0,state.rmax/1000)
 
         if state.rd_bathy == 1 :
 
             plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
+            """
             plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
             plt.plot(state.r_c/1000, state.z_c, 'mo')
-            
+
             plt.plot(np.array([state.r_c, state.r_c+state.nx_bt_bdy*500])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*500]), 'm-')
+            plt.plot(np.array([state.r_c, state.r_c+state.tx_bt_bdy*500])/1000, np.array([state.z_c, state.z_c+state.tz_bt_bdy*500]), 'm-')
 
             plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*500])/1000, np.array([state.zmax, state.zmax+state.nz_node*500]), 'k-')
-        
+            plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*500])/1000, np.array([state.zmax, state.zmax+state.tz_node*500]), 'k-')
+            """
         plt.grid()
-        
+
 
         """
         plt.figure()
@@ -104,7 +110,7 @@ def show(state) :
         R, Z = np.meshgrid(rr,zz)
 
         plt.figure(figsize = (10,8))
-        plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 60, vmax = 120)
+        plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120)
         cbar=plt.colorbar()
         cbar.ax.invert_yaxis()
         cbar.ax.tick_params(labelsize=17)
@@ -178,15 +184,22 @@ def show(state) :
 
         plt.figure()
         for i in range(state.eigen_ray) :
-            plt.plot(state.r[:,state.ray_num[i]],state.z[:,state.ray_num[i]],'k')
+            #plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
 
+            plt.plot(state.r[atten[:,state.ray_num[i]],state.ray_num[i]],state.z[atten[:,state.ray_num[i]],state.ray_num[i]],'k0')
+        """
+        print(state.eigen_ray)
+
+        plt.figure()
+        plt.plot(state.r[:,state.ray_num],state.z[:,state.ray_num],'k', linewidth = '1')
         plt.plot(state.r_rcvr,state.z_rcvr,'ro')
-        plt.ylim(state.zmax,state.zmin)
+        plt.ylim(np.max(state.zmax),state.zmin)
         plt.xlim(state.rmin,state.rmax)
+        plt.plot(state.zmax_r, state.zmax,'r',linewidth = '2')
 
 
         plt.figure()
-        plt.plot(state.Angle_rcvr[:state.eigen_ray], -10*np.log10(state.Amp_rcvr[:state.eigen_ray]),'r*')
+        plt.plot(state.Angle_rcvr[:state.eigen_ray], 20*np.log10(state.Amp_rcvr[:state.eigen_ray]/1e-6),'r*')
         plt.title("amp db")
         plt.xlabel('rcvr angle')
 
@@ -194,6 +207,6 @@ def show(state) :
         plt.plot(state.Angle_rcvr[0:state.eigen_ray], state.Delay_rcvr[0:state.eigen_ray],'r*')
         plt.title("delay")
         plt.xlabel('rcvr angle')
-        """
+
 
     plt.show()

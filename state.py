@@ -56,7 +56,10 @@ class state(object) :
         self.s_dim = param['speed_dim']
 
         self.use_fortran = param['use_fortran']
-        
+
         self.rd_bathy = param['range_dependent_bathy']
         self.bathy_linterp = param['bathy_linterp']
         self.bathy_file = param['bathy_file']
+
+        self.c_bot = param['c_bot']
+        self.rho_bot = param['rho_bot']
