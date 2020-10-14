@@ -1,12 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-#from os import *
-#import sys
-#sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
-#from readshd import *
-#from plotray import *
-#from read_arrivals_asc import *
+from os import *
+import sys
+import numpy as np
+from scipy.io import *
+import matplotlib.pyplot as plt
+sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
+from readshd import *
+from plotray import *
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -22,13 +24,17 @@ def show(state) :
 
     if state.exp == "R" :
 
-        plt.figure(figsize = (10,8))
+
+        system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+        plotray('../Bellhop/MunkB_OneBeam.ray')
+
+        #plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
         #plotray('../Code/MunkB_ray.ray')
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
         for i in range(state.nr) :
-            plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
+            plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'r--', linewidth = '1')
         #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
@@ -51,7 +57,12 @@ def show(state) :
 
             plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*500])/1000, np.array([state.zmax, state.zmax+state.nz_node*500]), 'k-')
             plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*500])/1000, np.array([state.zmax, state.zmax+state.tz_node*500]), 'k-')
+
+            print(np.shape(state.r+state.ray_x_bdy))
+            print(state.ray_x_bdy)
             """
+            for i in range(state.nr) :
+                plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'g-')
         plt.grid()
 
 

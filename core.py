@@ -34,7 +34,7 @@ class core(object) :
         r_bk = np.linspace(self.state.rmin,self.state.rmax,self.state.Lr)
 
         if self.state.load_c == 1 :
-            ncf=nc.Dataset('../rec_cel_n3_m.nc')
+            ncf=nc.Dataset('../rec_cel_sim_m.nc')
             z_int = ncf.variables['z_rec'][...]
             ncf.close()
 
@@ -61,6 +61,10 @@ class core(object) :
         self.state.bdy_top = np.zeros((self.state.n_max,self.state.nr))
         self.state.bdy_bot = np.zeros((self.state.n_max,self.state.nr))
         self.state.ds0 = self.state.ds0 * np.ones((self.state.nr))
+
+        """testing : """
+        self.state.ray_x_bdy = np.zeros((self.state.n_max,self.state.nr))
+        self.state.ray_z_bdy = np.zeros((self.state.n_max,self.state.nr))
 
         #TL
         self.state.p = np.zeros((self.state.n_max,self.state.nr))

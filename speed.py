@@ -51,7 +51,7 @@ def GenerateRandom(z,x, state) :
 
 	if state.load_c == 1 :
 		#ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
-		ncf=nc.Dataset('../rec_cel_n3_m.nc')
+		ncf=nc.Dataset('../rec_cel_sim_m.nc')
 
 		if state.mean_prof == 0 :
 			c = ncf.variables['C_rec'][...]

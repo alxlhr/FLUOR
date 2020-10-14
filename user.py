@@ -3,6 +3,15 @@
 import core
 import profile
 
+from os import *
+import sys
+import numpy as np
+from scipy.io import *
+import matplotlib.pyplot as plt
+sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
+from readshd import *
+from plotray import *
+
 #available exp : "TL", "R", "A"
 
 def run() :
@@ -12,10 +21,10 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 40
+        nr = 10
 
-        param = {'nr' : nr, 'z0' : 130, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1.2e3,
-                 'r0' : 1100, 'angles' : (-20,20), 'ds0' : 20, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
+        param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1.2e3,
+                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 20, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
                  'exp' : "R",
                  'r_rcvr' : 19e3, 'z_rcvr' : 100,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code
@@ -34,7 +43,7 @@ def run() :
                  'load_c' : 1,
                  'use_fortran' : 0, #speedup some functions, not ready yet
                  'range_dependent_bathy' : 1, #needs to load the bathy somewhere
-                 'bathy_linterp' : 1, #interpolates linearly the bathymetry normals
+                 'bathy_linterp' : 0, #interpolates linearly the bathymetry normals
                  'bathy_file' : '../gebco_2020_n38.3_s37.8_w15.3_e15.8.nc',
                  'c_bot' : 1600,
                  'rho_bot' : 2000
@@ -48,6 +57,9 @@ def run() :
 
 
         rays.run()
+
+    plt.show()
+
 
 if __name__ == '__main__' :
     run()
