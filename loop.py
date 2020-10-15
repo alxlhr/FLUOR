@@ -6,6 +6,8 @@ def ray_step(i,j,ds,state) :
 
     #print(np.shape(ds))
     out = (state.r[i,:] < state.rmax)
+    #out = (state.r[i,:] > state.rmin) & out 
+    #print(out)
     j = j & out
     ds = ds[j]
 
@@ -165,7 +167,10 @@ def ray_step(i,j,ds,state) :
 
     state.T[i+1,j] = state.T[i,j] + ds/6 * (dT_1 + 2*dT_2 + 2*dT_3 + dT_4)
 
+    #print('i : ', i)
+    #print('r : ',state.r[i+1,j])
     state.angle[i+1,j] = np.arctan((state.z[i+1,j] - state.z[i,j])/(state.r[i+1,j] - state.r[i,j]))
+    #print('angle_ : ', (state.r[i+1,j] - state.r[i,j]))
 
     state.C[i+1,j] = speed.get_speed(state.z[i+1,j], state.r[i+1,j], state.f_interp, state.s_dim)
 
@@ -176,6 +181,8 @@ def ray_step(i,j,ds,state) :
 
     state.amp[i+1,j] = state.amp[i,j]
     state.phi[i+1,j] = state.phi[i,j]
+
+    #print(state.tz[i+1,j])
 
     """
     print("*****")

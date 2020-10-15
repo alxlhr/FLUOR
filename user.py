@@ -2,6 +2,8 @@
 
 import core
 import profile
+import numpy as np
+
 """
 from os import *
 import sys
@@ -21,10 +23,10 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 20
+        nr = 40
 
-        param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1.2e3,
-                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 20, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
+        param = {'nr' : nr, 'z0' : 0, 'zmin' : 0, 'rmin' : 0, 'rmax' :1000+1000*np.sqrt(2)/2, 'zmax' : 1.2e3,
+                 'r0' : 0, 'angles' : (-60,-10), 'ds0' : 20, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
                  'exp' : "R",
                  'r_rcvr' : 19e3, 'z_rcvr' : 100,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code
@@ -40,7 +42,7 @@ def run() :
                  'save' : 0,
                  'exp_ind' : i,
                  'mean_prof' : 0,
-                 'load_c' : 1,
+                 'load_c' : 0,
                  'use_fortran' : 0, #speedup some functions, not ready yet
                  'range_dependent_bathy' : 1, #needs to load the bathy somewhere
                  'bathy_linterp' : 1, #interpolates linearly the bathymetry normals

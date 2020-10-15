@@ -52,14 +52,15 @@ def show(state) :
 
             #plt.plot(state.r_c/1000, state.z_c, 'mo')
             
-            plt.plot(np.array([state.r_c, state.r_c+state.nx_bt_bdy*100])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*100]), 'm-')
-            plt.plot(np.array([state.r_c, state.r_c+state.tx_bt_bdy*100])/1000, np.array([state.z_c, state.z_c+state.tz_bt_bdy*100]), 'm-')
+            #plt.plot(np.array([state.z_c, state.z_c+state.nx_bt_bdy*100])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*100]), 'm-')
+            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_bt_bdy[:-1]*100])/1000, np.array([state.zmax, state.zmax+state.tz_bt_bdy[:-1]*100]), 'm-')
 
-            plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
-            plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
+            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
+            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
             
             for i in range(state.nr) :
-                plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'g-')
+                plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'm-')
+            
         plt.grid()
             
 

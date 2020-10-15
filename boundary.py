@@ -99,11 +99,11 @@ def apply(i,state) :
         state.q[i+1,zM] = state.q[i+1,zM]
         state.p[i+1,zM] = state.p[i+1,zM] + state.q[i+1,zM] * N
 
-        #state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy[zM] / state.C[i+1,zM]
-        #state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy[zM] / state.C[i+1,zM]
+        state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
+        state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
 
-        state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
-        state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
+        #state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
+        #state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
 
         #boundary losses
         R = bdy_loss.fluid_fluid(state,i,zM,theta_I)
@@ -111,7 +111,7 @@ def apply(i,state) :
         state.amp[i+1,zM] = state.amp[i,zM] * np.abs(R)
         state.phi[i+1,zM] = state.phi[i,zM] + np.angle(R)
 
-        """
+        
         #Angles check
         nx = -state.C[i+1,zM]*state.Y[i+1,zM]
         nz = state.C[i+1,zM]*state.X[i+1,zM]
@@ -119,12 +119,12 @@ def apply(i,state) :
         tz = state.C[i+1,zM]*state.Y[i+1,zM]
 
 
-        theta_R = tx*nx_bt_bdy[zM] + tz*nz_bt_bdy[zM]
-        print("**********")
-        print("I : ", theta_I)
-        print("R : ", theta_R)
-        print("check : ", theta_I == - theta_R)
-        """
+        theta_R = tx*nx_bt_bdy + tz*nz_bt_bdy
+        #print("**********")
+        #print("I : ", theta_I)
+        #print("R : ", theta_R)
+        #print("check : ", theta_I + theta_R < 1e-9)
+       
     #Top boundary
     if indm.size > 0 :
 
@@ -187,6 +187,7 @@ def calculate_normals(state) :
     state.tx_bt_bdy = -state.nz_bt_bdy
     state.tz_bt_bdy = state.nx_bt_bdy
 
+    #print('bthy normal angle : ',np.rad2deg(np.arctan(state.tz_bt_bdy/state.tx_bt_bdy)))
 
     #get center of the bathy sections
 
@@ -215,22 +216,27 @@ def calculate_normals(state) :
         dist_bwd = np.sqrt( (state.zmax_r[j] - state.r_c[j-1])**2 + (state.zmax[j] - state.z_c[j-1])**2) #distance from the node to the previous normal
         dist_fwd = np.sqrt( (state.zmax_r[j] - state.r_c[j])**2 + (state.zmax[j] - state.z_c[j])**2) #distance from the node to its corresponding normal
 
+        #print((1 - dist_bwd / (dist_bwd + dist_fwd) ))
+        #print( (dist_bwd / (dist_bwd + dist_fwd)))
+
         #marche pas bien quand topo pas linéaire :
         state.nx_node[j] = state.nx_bt_bdy[j] * (1 - dist_bwd / (dist_bwd + dist_fwd) ) + state.nx_bt_bdy[j-1] * (dist_bwd / (dist_bwd + dist_fwd))
         state.nz_node[j] = state.nz_bt_bdy[j] * (1 - dist_bwd / (dist_bwd + dist_fwd) ) + state.nz_bt_bdy[j-1] * (dist_bwd / (dist_bwd + dist_fwd))
         ####
 
+    norm = np.sqrt(state.nx_node**2 + state.nz_node**2)
     #normalize :
-    state.nx_node = state.nx_node / np.sqrt(state.nx_node**2 + state.nz_node**2)
-    state.nz_node = state.nz_node / np.sqrt(state.nx_node**2 + state.nz_node**2)
+    state.nx_node = state.nx_node / norm
+    state.nz_node = state.nz_node / norm
 
     state.tx_node = -state.nz_node
     state.tz_node = state.nx_node
 
+    #print('node normal angle : ',np.rad2deg(np.arctan(state.tz_node/state.tx_node)))
 
 
     #print(state.nx_node)
-    print('norm : ', np.sqrt(state.nx_node**2 + state.nz_node**2))
+    #print('norm : ', np.sqrt(state.nx_node**2 + state.nz_node**2))
 
 
 def interpolate_normals(i, state, zM, z_bot, bthy_m) :
@@ -256,22 +262,17 @@ def interpolate_normals(i, state, zM, z_bot, bthy_m) :
 
     nx_bt_bdy = state.nx_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
     nz_bt_bdy = state.nz_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
-
+    
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
-    #print(norm)
+    #print('norm :',norm)
     nx_bt_bdy = nx_bt_bdy/norm
     nz_bt_bdy = nz_bt_bdy/norm
-    #print(np.shape(nx_bt_bdy))
+    #norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
+    #print('norm :',norm)
 
-    norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
-    #print(norm)
-
-    """
-    print()
-    print(np.mean(np.array([state.nx_node[bthy_m],state.nz_node[bthy_m+1]])))
-    print(nx_bt_bdy)
-    """
     state.ray_x_bdy[i+1,zM] = nx_bt_bdy
     state.ray_z_bdy[i+1,zM] = nz_bt_bdy
+
+    #print(np.rad2deg(np.arctan(-nx_bt_bdy/nz_bt_bdy)))
 
     return nx_bt_bdy, nz_bt_bdy
