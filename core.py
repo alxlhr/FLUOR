@@ -112,11 +112,12 @@ class core(object) :
             b = 250e3
             c = 250
 
-            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,5)
-            self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
-            #self.state.zmax = np.linspace(5000,0,len(self.state.zmax_r))
+            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,3)
+            #self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
+            self.state.zmax = np.linspace(5000,0,len(self.state.zmax_r))
+            self.state.zmax[:2] = 200
+            self.state.zmax[-1] = 1000
             """
-
 
             boundary.calculate_normals(self.state)
 

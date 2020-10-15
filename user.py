@@ -43,7 +43,7 @@ def run() :
                  'load_c' : 1,
                  'use_fortran' : 0, #speedup some functions, not ready yet
                  'range_dependent_bathy' : 1, #needs to load the bathy somewhere
-                 'bathy_linterp' : 0, #interpolates linearly the bathymetry normals
+                 'bathy_linterp' : 1, #interpolates linearly the bathymetry normals
                  'bathy_file' : '../gebco_2020_n38.3_s37.8_w15.3_e15.8.nc',
                  'c_bot' : 1600,
                  'rho_bot' : 2000
