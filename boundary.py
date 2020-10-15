@@ -123,7 +123,9 @@ def apply(i,state) :
         #print("**********")
         #print("I : ", theta_I)
         #print("R : ", theta_R)
-        #print("check : ", theta_I + theta_R < 1e-9)
+        chck_ang = theta_I + theta_R < 1e-9
+        if (np.any(chck_ang == False)) :
+            print("Problem with incident/reflected angles : ",i)
        
     #Top boundary
     if indm.size > 0 :
@@ -170,6 +172,12 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
     ds = np.zeros_like(state.ds0)
     ds[zM] = - de_0 / (tx*nx_bt_bdy + tz*nz_bt_bdy)
 
+    if (np.any(ds < 0)) :
+        print("Problem with negative step size : ",i)
+        print(d0_r)
+        print(state.r[i,zM])
+        #print(d0_z)
+    
     return ds
 
 

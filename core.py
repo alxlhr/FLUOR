@@ -14,6 +14,7 @@ import netCDF4 as nc
 import matplotlib.pyplot as plt
 from numba import jit
 from functools import partial
+import bathymetry as bathy
 
 class core(object) :
 
@@ -96,31 +97,26 @@ class core(object) :
 
         #rd bathy
         if self.state.rd_bathy == 1 :
-            nc_bathy = nc.Dataset(self.state.bathy_file)
-            lat = nc_bathy.variables['lat'][...]
-            lon = nc_bathy.variables['lon'][...]
-            bathy = nc_bathy.variables['elevation'][...]
 
-            Lon,Lat = np.meshgrid(lon,lat)
-            L0 = np.argmin(np.abs(Lat - 38.05), axis = 0)
-            self.state.zmax = -1*bathy[L0][0,:]
-            self.state.zmax = self.state.zmax[self.state.zmax > 0]
-            self.state.zmax_r = np.linspace(self.state.rmin,self.state.rmax,len(self.state.zmax))
+            bathy.load(self.state)
+            #ri_b = np.linspace(self.state.rmin, self.state.rmax, 1000)
+            #bathy.interpolate(self.state,ri_b)
 
+            
             #For testing purposes
             b = 250e3
             c = 250
             
+            """
             self.state.zmax_r = np.array([0,1000,1000+1000*np.sqrt(2)/2])
             self.state.zmax = np.linspace(5000,0,len(self.state.zmax_r))
             self.state.zmax[0] = 200
             self.state.zmax[1] = 200
             self.state.zmax[2] = 1000*np.sqrt(2)/2+200
+            """
+            #self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 5000)
+            #self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
             
-            """
-            self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 5000)
-            self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
-            """
             boundary.calculate_normals(self.state)
 
     def check_res(self) :
