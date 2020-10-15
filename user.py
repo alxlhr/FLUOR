@@ -2,7 +2,7 @@
 
 import core
 import profile
-
+"""
 from os import *
 import sys
 import numpy as np
@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
-
+"""
 #available exp : "TL", "R", "A"
 
 def run() :
@@ -21,7 +21,7 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 10
+        nr = 20
 
         param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1.2e3,
                  'r0' : 0, 'angles' : (-20,20), 'ds0' : 20, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
@@ -57,8 +57,6 @@ def run() :
 
 
         rays.run()
-
-    plt.show()
 
 
 if __name__ == '__main__' :

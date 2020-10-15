@@ -49,19 +49,6 @@ def apply(i,state) :
     if indM.size > 0 :
 
         if state.rd_bathy == 1 :
-            #bathy normal and tangent
-            if state.bathy_linterp == 0 :
-                nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
-                nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
-
-            elif state.bathy_linterp == 1 :
-                [nx_bt_bdy, nz_bt_bdy] = interpolate_normals(i, state,zM, z_bot, bthy_m)
-            else :
-                raise ValueError('Bad bathy interp option')
-
-            tx_bt_bdy = -nz_bt_bdy
-            tz_bt_bdy = nx_bt_bdy
-
             """If the ray gets out of the domain"""
             """
             nx_bt_bdy[r_out] = 0*nx_bt_bdy[r_out]
@@ -69,13 +56,24 @@ def apply(i,state) :
             tx_bt_bdy[r_out] = nz_bt_bdy[r_out]
             tz_bt_bdy[r_out] = -nx_bt_bdy[r_out]
             """
-
+            nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
+            nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
+            tx_bt_bdy = -nz_bt_bdy
+            tz_bt_bdy = nx_bt_bdy
 
         if state.rd_bathy == 0 :
             ds = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
         elif state.rd_bathy == 1 :
             ds = recalculate_step(state, i, zM, bthy_m,nx_bt_bdy, nz_bt_bdy)
 
+         #bathy normal and tangent
+        if state.bathy_linterp == 0 :
+            nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
+            nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
+        elif state.bathy_linterp == 1 :
+            [nx_bt_bdy, nz_bt_bdy] = interpolate_normals(i, state,zM, z_bot, bthy_m)
+        else :
+            raise ValueError('Bad bathy interp option')
 
         loop.ray_step(i,zM,ds,state)
 
@@ -247,26 +245,28 @@ def interpolate_normals(i, state, zM, z_bot, bthy_m) :
     #distance between the two nodes
     dist_nodes = np.sqrt((state.zmax_r[bthy_m[zM]] - state.zmax_r[bthy_m[zM]+1])**2 + (state.zmax[bthy_m[zM]] - state.zmax[bthy_m[zM]+1])**2)
 
+    #print(bthy_m[zM])
+
     #print()
     #print('z_bot :',z_bot)
     #print('zM :',zM)
     #print('bthy :',state.zmax_r[bthy_m[zM]])
 
     #distance between the hitting point and the nodes
-    dist_m = np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]])**2+(z_bot[zM] - state.zmax[bthy_m[zM]])**2)  #(nrays,)
-    dist_p =  np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]+1])**2+(z_bot[zM] - state.zmax[bthy_m[zM]+1])**2)  #(nrays,)
+    dist_m = np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]])**2+(z_bot[zM] - state.zmax[bthy_m[zM]])**2)  #(zM,)
+    dist_p =  np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]+1])**2+(z_bot[zM] - state.zmax[bthy_m[zM]+1])**2)  #(zM,)
 
     nx_bt_bdy = state.nx_node[bthy_m[zM]] * (1 - dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * ( dist_p  / dist_nodes)
     nz_bt_bdy = state.nz_node[bthy_m[zM]] * (1 - dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * ( dist_p  / dist_nodes)
 
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
-    print(norm)
+    #print(norm)
     nx_bt_bdy = nx_bt_bdy/norm
     nz_bt_bdy = nz_bt_bdy/norm
     #print(np.shape(nx_bt_bdy))
 
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
-    print(norm)
+    #print(norm)
 
     """
     print()
