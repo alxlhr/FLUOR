@@ -71,6 +71,7 @@ def ray_step(i,j,ds,state) :
     r_4 = state.r[i,j] + ds * dr_3
     z_4 = state.z[i,j] + ds * dz_3
 
+    #print(dr_3)
     C_4 = speed.get_speed(z_4,r_4, state.f_interp, state.s_dim)
 
     Y_4 = state.Y[i,j] + ds * dY_3

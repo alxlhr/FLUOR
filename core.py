@@ -81,7 +81,7 @@ class core(object) :
         self.state.tz = np.zeros((self.state.n_max,self.state.nr))
         self.state.nx = np.zeros((self.state.n_max,self.state.nr))
         self.state.nz = np.zeros((self.state.n_max,self.state.nr))
-        state.i_max = np.zeros((self.state.nr))
+        self.state.rays_int = np.ones((self.state.nr), dtype = bool)
 
         self.state.X[0,:] = X0
         self.state.Y[0,:] = Y0
@@ -114,7 +114,7 @@ class core(object) :
             self.state.zmax[1] = 200
             self.state.zmax[2] = 1000*np.sqrt(2)/2+200
             """
-            self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 10000)
+            self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 50)
             self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
             
             boundary.calculate_normals(self.state)
@@ -128,10 +128,12 @@ class core(object) :
 
     def inner_loop(self) :
         def_arr = np.ones_like(self.state.z[0,:],dtype = bool)
+       
         for i in range(self.state.n_max-1) :
+            arr_int = def_arr & self.state.rays_int
             if (i%10 == 0) :
                 print("%i / %i" %(i, self.state.n_max), end = '\r')
-            loop.ray_step(i,def_arr,self.state.ds0,self.state)
+            loop.ray_step(i,arr_int,self.state.ds0,self.state)
             caustics.step(i,self.state)
             boundary.apply(i,self.state)
             #gc.collect()

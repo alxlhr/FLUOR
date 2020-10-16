@@ -23,10 +23,10 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 10
+        nr = 200
 
-        param = {'nr' : nr, 'z0' : 0, 'zmin' : 0, 'rmin' : 0, 'rmax' :10e3, 'zmax' : 1.2e3,
-                 'r0' : 0, 'angles' : (-80,-20), 'ds0' : 2, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
+        param = {'nr' : nr, 'z0' : 0, 'zmin' : 0, 'rmin' : 0, 'rmax' :40e3, 'zmax' : 8000,
+                 'r0' : 0, 'angles' : (-80,-10), 'ds0' : 20, 'f' : 10, 'Lr' : 200, 'Lz' : 200,
                  'exp' : "R",
                  'r_rcvr' : 19e3, 'z_rcvr' : 100,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code

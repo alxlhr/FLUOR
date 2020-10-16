@@ -110,10 +110,8 @@ def apply(i,state) :
 
         #boundary losses
         R = bdy_loss.fluid_fluid(state,i,zM,theta_I)
-
         state.amp[i+1,zM] = state.amp[i,zM] * np.abs(R)
         state.phi[i+1,zM] = state.phi[i,zM] + np.angle(R)
-
         
         #Angles check
         nx = -state.C[i+1,zM]*state.Y[i+1,zM]
@@ -164,18 +162,25 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
     d0_r = state.r[i,zM] - state.zmax_r[bthy_m[zM]]
     d0_z = state.z[i,zM] - state.zmax[bthy_m[zM]]
 
+    d_r = state.r[i+1,zM] - state.zmax_r[bthy_m[zM]]
+    d_z = state.z[i+1,zM] - state.zmax[bthy_m[zM]]
+
     #print('shape d0_r : ',np.shape(nz_bt_bdy))
 
     de_0 = d0_r * nx_bt_bdy + d0_z * nz_bt_bdy
+    de = d_r * nx_bt_bdy + d_z * nz_bt_bdy
 
     tx = state.C[i,zM]*state.X[i,zM]
     tz = state.C[i,zM]*state.Y[i,zM]
+
+    dh = - de_0 / (-de_0 + de) * state.ds0[zM]
 
     ds = np.zeros_like(state.ds0)
     ds[zM] = - de_0 / (tx*nx_bt_bdy + tz*nz_bt_bdy)
 
     if (np.any(ds < 0)) :
-        print("Problem with negative step size : ",i)
+        #print("Problem with negative step size : ",i)
+        state.rays_int[ds < 0] = False 
         #print(d0_r)
         #print(state.r[i,zM])
         #print(d0_z)

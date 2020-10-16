@@ -20,6 +20,7 @@ plt.rc('axes', linewidth=2)
 
 def show(state) :
 
+    print(np.sum(state.rays_int))
     atten = (state.amp > 0.01)
 
     if state.exp == "R" :
@@ -34,6 +35,8 @@ def show(state) :
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
         for i in range(state.nr) :
+            if state.rays_int[i] == False :
+                continue
             plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
         #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
@@ -54,16 +57,32 @@ def show(state) :
             
             #plt.plot(np.array([state.z_c, state.z_c+state.nx_bt_bdy*100])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*100]), 'm-')
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_bt_bdy[:-1]*100])/1000, np.array([state.zmax, state.zmax+state.tz_bt_bdy[:-1]*100]), 'm-')
-
-            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
-            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
             """
+            plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
+            plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
+            
             for i in range(state.nr) :
                 plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'm-')
-            """
-        plt.grid()
             
-
+        #plt.grid()
+            
+        plt.figure()
+        for i in range(state.nr) :
+                plt.plot(state.r[:,i],state.ray_x_bdy[:,i], 'k.')
+        plt.plot(state.zmax_r, state.nx_node,'r*')
+        plt.ylabel('normal x-component')
+        plt.xlabel('range')
+        """
+        plt.figure()
+        plt.plot(state.tz)
+        """
+        plt.figure()
+        for i in range(state.nr) :
+                plt.plot(state.r[:,i],np.rad2deg(np.arctan(-state.ray_x_bdy[:,i]/state.ray_z_bdy[:,i])), 'k.')
+        plt.plot(state.zmax_r, np.rad2deg(np.arctan(-state.nx_node/state.nz_node)),'r*')
+        plt.ylabel('normal angle')
+        plt.xlabel('range')
+        """
         """
         plt.figure()
         plt.plot(state.r/1e3, state.z, 'k')
