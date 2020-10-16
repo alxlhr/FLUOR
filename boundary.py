@@ -69,11 +69,11 @@ def apply(i,state) :
         tx_bt_bdy = -nz_bt_bdy
         tz_bt_bdy = nx_bt_bdy
 
+        loop.ray_step(i,zM,ds,state)
+
         #If linterp, recalculate normals
         if state.bathy_linterp == 1 :
-            [nx_bt_bdy, nz_bt_bdy] = interpolate_normals(i, state,zM, z_bot, bthy_m)
-
-        loop.ray_step(i,zM,ds,state)
+            [nx_bt_bdy, nz_bt_bdy] = interpolate_normals(i, state,zM, bthy_m)
 
         dcdr = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],0,1, state.s_dim)
         dcdz = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],1,0, state.s_dim)
@@ -99,6 +99,9 @@ def apply(i,state) :
         state.q[i+1,zM] = state.q[i+1,zM]
         state.p[i+1,zM] = state.p[i+1,zM] + state.q[i+1,zM] * N
 
+        #tangent : c * (X,Y)
+        #normal :  c * (-Y,X)
+
         state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
         state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
 
@@ -118,12 +121,11 @@ def apply(i,state) :
         tx = state.C[i+1,zM]*state.X[i+1,zM]
         tz = state.C[i+1,zM]*state.Y[i+1,zM]
 
-
         theta_R = tx*nx_bt_bdy + tz*nz_bt_bdy
         #print("**********")
         #print("I : ", theta_I)
         #print("R : ", theta_R)
-        chck_ang = theta_I + theta_R < 1e-9
+        chck_ang = theta_I + theta_R < 1e-12
         if (np.any(chck_ang == False)) :
             print("Problem with incident/reflected angles : ",i)
        
@@ -174,8 +176,8 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
 
     if (np.any(ds < 0)) :
         print("Problem with negative step size : ",i)
-        print(d0_r)
-        print(state.r[i,zM])
+        #print(d0_r)
+        #print(state.r[i,zM])
         #print(d0_z)
     
     return ds
@@ -203,7 +205,6 @@ def calculate_normals(state) :
     state.z_c = dl/2 * np.sin(-alpha_r) + state.zmax[:-1]
     state.r_c =  dl/2 * np.cos(-alpha_r) + state.zmax_r[:-1]
 
-
     #Get normals at the nodes
 
     state.nx_node = np.zeros_like(state.zmax,dtype = float)
@@ -216,21 +217,13 @@ def calculate_normals(state) :
     state.nx_node[-1] = state.nx_bt_bdy[-1]
     state.nz_node[-1] = state.nz_bt_bdy[-1]
 
-
-
     for j in range(1,len(state.zmax)-1) :
-        #print(j)
         #should be ok :
         dist_bwd = np.sqrt( (state.zmax_r[j] - state.r_c[j-1])**2 + (state.zmax[j] - state.z_c[j-1])**2) #distance from the node to the previous normal
         dist_fwd = np.sqrt( (state.zmax_r[j] - state.r_c[j])**2 + (state.zmax[j] - state.z_c[j])**2) #distance from the node to its corresponding normal
 
-        #print((1 - dist_bwd / (dist_bwd + dist_fwd) ))
-        #print( (dist_bwd / (dist_bwd + dist_fwd)))
-
-        #marche pas bien quand topo pas linéaire :
         state.nx_node[j] = state.nx_bt_bdy[j] * (1 - dist_bwd / (dist_bwd + dist_fwd) ) + state.nx_bt_bdy[j-1] * (dist_bwd / (dist_bwd + dist_fwd))
         state.nz_node[j] = state.nz_bt_bdy[j] * (1 - dist_bwd / (dist_bwd + dist_fwd) ) + state.nz_bt_bdy[j-1] * (dist_bwd / (dist_bwd + dist_fwd))
-        ####
 
     norm = np.sqrt(state.nx_node**2 + state.nz_node**2)
     #normalize :
@@ -240,14 +233,11 @@ def calculate_normals(state) :
     state.tx_node = -state.nz_node
     state.tz_node = state.nx_node
 
-    #print('node normal angle : ',np.rad2deg(np.arctan(state.tz_node/state.tx_node)))
-
-
     #print(state.nx_node)
     #print('norm : ', np.sqrt(state.nx_node**2 + state.nz_node**2))
 
 
-def interpolate_normals(i, state, zM, z_bot, bthy_m) :
+def interpolate_normals(i, state, zM, bthy_m) :
 
     #bthy_m : bathy section of each ray (nray,)
     #zM : number of bounces nbounce < nray (nbounce,)
@@ -257,26 +247,17 @@ def interpolate_normals(i, state, zM, z_bot, bthy_m) :
     #distance between the two nodes
     dist_nodes = np.sqrt((state.zmax_r[bthy_m[zM]] - state.zmax_r[bthy_m[zM]+1])**2 + (state.zmax[bthy_m[zM]] - state.zmax[bthy_m[zM]+1])**2)
 
-    #print(bthy_m[zM])
-
-    #print()
-    #print('z_bot :',z_bot)
-    #print('zM :',zM)
-    #print('bthy :',state.zmax_r[bthy_m[zM]])
-
     #distance between the hitting point and the nodes
-    dist_m = np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]])**2+(z_bot[zM] - state.zmax[bthy_m[zM]])**2)  #(zM,)
-    dist_p =  np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]+1])**2+(z_bot[zM] - state.zmax[bthy_m[zM]+1])**2)  #(zM,)
+    dist_m = np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]])**2+(state.z[i+1,zM] - state.zmax[bthy_m[zM]])**2)  #(zM,)
+    dist_p =  np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]+1])**2+(state.z[i+1,zM] - state.zmax[bthy_m[zM]+1])**2)  #(zM,)
 
     nx_bt_bdy = state.nx_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
     nz_bt_bdy = state.nz_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
     
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
-    #print('norm :',norm)
+
     nx_bt_bdy = nx_bt_bdy/norm
     nz_bt_bdy = nz_bt_bdy/norm
-    #norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
-    #print('norm :',norm)
 
     state.ray_x_bdy[i+1,zM] = nx_bt_bdy
     state.ray_z_bdy[i+1,zM] = nz_bt_bdy

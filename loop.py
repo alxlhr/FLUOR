@@ -188,5 +188,5 @@ def ray_step(i,j,ds,state) :
     print("*****")
     print(i)
     print(state.tx[i+1,j])
-    print(state.tz[i+1,j])
+    
     """

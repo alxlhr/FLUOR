@@ -98,7 +98,7 @@ class core(object) :
         #rd bathy
         if self.state.rd_bathy == 1 :
 
-            bathy.load(self.state)
+            #bathy.load(self.state)
             #ri_b = np.linspace(self.state.rmin, self.state.rmax, 1000)
             #bathy.interpolate(self.state,ri_b)
 
@@ -114,8 +114,8 @@ class core(object) :
             self.state.zmax[1] = 200
             self.state.zmax[2] = 1000*np.sqrt(2)/2+200
             """
-            #self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 5000)
-            #self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
+            self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 10000)
+            self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
             
             boundary.calculate_normals(self.state)
 
