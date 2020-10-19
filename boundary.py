@@ -27,6 +27,8 @@ def apply(i,state) :
 
         #linear interpolation of the depth at that point (linterp from wikipedia)
         z_bot = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
+        print(crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:], state.zmax_r[bthy_m], state.zmax[bthy_m], state.zmax_r[bthy_M], state.zmax[bthy_M]))
+
         r_out = (state.r[i+1,:] > state.rmax)
         z_bot[r_out] = state.zmax[-1] #bathy outside the domain to avoid problems with reflections
 
@@ -59,7 +61,7 @@ def apply(i,state) :
             #Precalculate normals
             nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
             nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
-            
+
 
         if state.rd_bathy == 0 :
             ds = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
@@ -112,21 +114,21 @@ def apply(i,state) :
         R = bdy_loss.fluid_fluid(state,i,zM,theta_I)
         state.amp[i+1,zM] = state.amp[i,zM] * np.abs(R)
         state.phi[i+1,zM] = state.phi[i,zM] + np.angle(R)
-        
-        #Angles check
-        nx = -state.C[i+1,zM]*state.Y[i+1,zM]
-        nz = state.C[i+1,zM]*state.X[i+1,zM]
-        tx = state.C[i+1,zM]*state.X[i+1,zM]
-        tz = state.C[i+1,zM]*state.Y[i+1,zM]
 
-        theta_R = tx*nx_bt_bdy + tz*nz_bt_bdy
+        #Angles check
+        #nx = -state.C[i+1,zM]*state.Y[i+1,zM]
+        #nz = state.C[i+1,zM]*state.X[i+1,zM]
+        #tx = state.C[i+1,zM]*state.X[i+1,zM]
+        #tz = state.C[i+1,zM]*state.Y[i+1,zM]
+
+        #theta_R = tx*nx_bt_bdy + tz*nz_bt_bdy
         #print("**********")
         #print("I : ", theta_I)
         #print("R : ", theta_R)
-        chck_ang = theta_I + theta_R < 1e-12
-        if (np.any(chck_ang == False)) :
-            print("Problem with incident/reflected angles : ",i)
-       
+        #chck_ang = theta_I + theta_R < 1e-12
+        #if (np.any(chck_ang == False)) :
+        #    print("Problem with incident/reflected angles : ",i)
+
     #Top boundary
     if indm.size > 0 :
 
@@ -180,11 +182,11 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
 
     if (np.any(ds < 0)) :
         #print("Problem with negative step size : ",i)
-        state.rays_int[ds < 0] = False 
+        state.rays_int[ds < 0] = False
         #print(d0_r)
         #print(state.r[i,zM])
         #print(d0_z)
-    
+
     return ds
 
 
@@ -258,7 +260,7 @@ def interpolate_normals(i, state, zM, bthy_m) :
 
     nx_bt_bdy = state.nx_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
     nz_bt_bdy = state.nz_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
-    
+
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
 
     nx_bt_bdy = nx_bt_bdy/norm
@@ -270,3 +272,8 @@ def interpolate_normals(i, state, zM, bthy_m) :
     #print(np.rad2deg(np.arctan(-nx_bt_bdy/nz_bt_bdy)))
 
     return nx_bt_bdy, nz_bt_bdy
+
+
+def crossing_depth(x1, y1, x2, y2, x3, y3, x4, y4) :
+    z_bot = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+    return z_bot

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
-"""
-from os import *
+
+import os
 import sys
 import numpy as np
 from scipy.io import *
@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
-"""
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",
@@ -25,10 +25,26 @@ def show(state) :
 
     if state.exp == "R" :
 
-        """
-        system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
+        theline = fid.readline()
+        theline = fid.readline()
+        n       = int( theline )
+        rbtykm  = zeros( n )
+        zbty    = zeros( n )
+        for i in range(n):
+            theline = str( fid.readline() )
+            datai = theline.split()
+            rbtykm[ i] = float( datai[0] )
+            zbty[   i] = float( datai[1] )
+        fid.close()
+
+        rbty = rbtykm
+
         plotray('../Bellhop/MunkB_OneBeam.ray')
-        """
+        plot(rbty,zbty,'m',linewidth=2)
+
         #plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
         #plotray('../Code/MunkB_ray.ray')
@@ -37,7 +53,8 @@ def show(state) :
         for i in range(state.nr) :
             if state.rays_int[i] == False :
                 continue
-            plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
+            plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'r--', linewidth = '1')
+            print(i)
         #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
@@ -49,23 +66,23 @@ def show(state) :
 
         if state.rd_bathy == 1 :
 
-            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
-            
+            plt.plot(state.zmax_r/1000, state.zmax,'b--',linewidth = '2')
+
             #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
             #plt.plot(state.r_c/1000, state.z_c, 'mo')
-            
+
             #plt.plot(np.array([state.z_c, state.z_c+state.nx_bt_bdy*100])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*100]), 'm-')
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_bt_bdy[:-1]*100])/1000, np.array([state.zmax, state.zmax+state.tz_bt_bdy[:-1]*100]), 'm-')
             """
             plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
             plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
-            
+
             for i in range(state.nr) :
                 plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'm-')
-            
+
         #plt.grid()
-            
+
         plt.figure()
         for i in range(state.nr) :
                 plt.plot(state.r[:,i],state.ray_x_bdy[:,i], 'k.')
@@ -132,6 +149,52 @@ def show(state) :
         plt.ylim(Dmax,0)
         """
 
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+        filename = '../Bellhop/MunkB_OneBeam.shd'
+        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
+        theline = fid.readline()
+        theline = fid.readline()
+        n       = int( theline )
+        rbtykm  = zeros( n )
+        zbty    = zeros( n )
+        for i in range(n):
+            theline = str( fid.readline() )
+            datai = theline.split()
+            rbtykm[ i] = float( datai[0] )
+            zbty[   i] = float( datai[1] )
+        fid.close()
+
+        rbty = rbtykm
+
+        xs = np.nan
+        ys = np.nan
+        pressure,geometry = readshd(filename,xs,ys)
+
+        zs     = geometry["zs"]
+        rarray = geometry["rarray"]; rarraykm = rarray/1000
+        zarray = geometry["zarray"]
+
+        Dmax = zarray[-1]
+        rmax = rarray[-1]; rmaxkm = rmax/1000
+
+        p_b = np.squeeze( pressure, axis=(0,1) )
+        tl = -20*np.log10( abs( p_b ) )
+
+        tl[tl > 120.0] = 120.0
+
+        print(rbty)
+
+        plt.figure(figsize = (10,8))
+        plt.imshow(tl,extent=[0,rmaxkm,0,Dmax],aspect='auto',cmap='jet_r',origin='lower',vmin=40,vmax=120)
+        plt.plot(rbty,zbty,'k',linewidth=2)
+        cb = plt.colorbar()
+        cb.ax.invert_yaxis()
+        cb.ax.tick_params(labelsize=17)
+        cb.set_label('\\textbf{TL (dB)}', rotation=270, fontsize = 17, labelpad = 14)
+        #plt.ylim(np.max(state.zmax),state.zmin)
+        #plt.xlim(state.rmin,state.rmax/1000)
+        plt.ylim(np.max(state.zmax),0)
+        plt.xlim(0,state.rmax/1000)
 
         zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
         rr = np.linspace(state.rmin,state.rmax,state.Lr)
@@ -153,8 +216,8 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
 
         if state.rd_bathy == 1 :
-            plt.plot(state.zmax_r/1000, state.zmax,'r',linewidth = '2')
-            plt.plot(state.zmax_r/1000, state.zmax, 'ko')
+            plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '2')
+            #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
         """
         plt.figure(figsize = (10,8))

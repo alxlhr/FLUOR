@@ -98,25 +98,25 @@ class core(object) :
         #rd bathy
         if self.state.rd_bathy == 1 :
 
-            #bathy.load(self.state)
+            bathy.load(self.state)
             #ri_b = np.linspace(self.state.rmin, self.state.rmax, 1000)
             #bathy.interpolate(self.state,ri_b)
 
-            
+
             #For testing purposes
             b = 250e3
             c = 250
-            
+
             """
             self.state.zmax_r = np.array([0,1000,1000+1000*np.sqrt(2)/2])
             self.state.zmax = np.linspace(5000,0,len(self.state.zmax_r))
             self.state.zmax[0] = 200
             self.state.zmax[1] = 200
             self.state.zmax[2] = 1000*np.sqrt(2)/2+200
-            """
+
             self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 50)
             self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
-            
+            """
             boundary.calculate_normals(self.state)
 
     def check_res(self) :
@@ -128,7 +128,7 @@ class core(object) :
 
     def inner_loop(self) :
         def_arr = np.ones_like(self.state.z[0,:],dtype = bool)
-       
+
         for i in range(self.state.n_max-1) :
             arr_int = def_arr & self.state.rays_int
             if (i%10 == 0) :
