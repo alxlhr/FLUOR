@@ -25,8 +25,8 @@ def run() :
 
         nr = 10
 
-        param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 8000,
-                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 10, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
+        param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1200,
+                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 10, 'f' : 1000, 'Lr' : 400, 'Lz' : 400,
                  'exp' : "TL",
                  'r_rcvr' : 18e3, 'z_rcvr' : 100,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code

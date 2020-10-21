@@ -203,6 +203,7 @@ def show(state) :
 
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120)
+        plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
         cbar=plt.colorbar()
         cbar.ax.invert_yaxis()
         cbar.ax.tick_params(labelsize=17)
@@ -220,21 +221,22 @@ def show(state) :
             plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '2')
             #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
-        """
+
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)
+        plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
         cbar=plt.colorbar()
         cbar.ax.tick_params(labelsize=17)
         cbar.set_label('\\textbf{TL difference (dB)}', rotation=270, fontsize = 17, labelpad = 14)
         #plt.title('TL difference')
-        plt.ylim(state.zmax,state.zmin)
+        plt.ylim(np.max(state.zmax),state.zmin)
         plt.xlim(state.rmin,state.rmax/1000)
         plt.xlabel('\\textbf{Range (Km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
-        """
+
     if state.exp == 'A' :
 
         os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Arr")

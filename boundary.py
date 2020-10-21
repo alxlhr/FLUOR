@@ -83,19 +83,14 @@ def apply(i,state) :
         #print(z_bot)
 
         #Ray normal and tangent
-        nx = -state.C[i+1,zM]*state.Y[i+1,zM]
-        nz = state.C[i+1,zM]*state.X[i+1,zM]
-        tx = state.C[i+1,zM]*state.X[i+1,zM]
-        tz = state.C[i+1,zM]*state.Y[i+1,zM]
-
-        theta_I = tx*nx_bt_bdy + tz*nz_bt_bdy
+        theta_I = state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy
 
         #z > 0 upward
-        alpha = tx*nx_bt_bdy + nz_bt_bdy*tz #t_ray * boundary normal
-        beta = tx_bt_bdy*tx + tz_bt_bdy*tz #t_ray * boundary tangent (right handed coordinate system)
+        alpha = state.tx[i+1,zM]*nx_bt_bdy + nz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary normal
+        beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent (right handed coordinate system)
 
-        cn = dcdz * nz + dcdr * nx
-        cs = dcdz * tz + dcdr * tx
+        cn = dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
+        cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
 
         M = beta/alpha
         N = M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
@@ -183,7 +178,8 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
     ds[zM] = - de_0 / (tx*nx_bt_bdy + tz*nz_bt_bdy)
 
     if (np.any(ds < 0)) :
-        #print("Problem with negative step size : ",i)
+        print("Problem with negative step size : ",i)
+        print(zM)
         state.rays_int[ds < 0] = False
         #print(d0_r)
         #print(state.r[i,zM])
