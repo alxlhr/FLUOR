@@ -154,7 +154,7 @@ class core(object) :
 
         self.inner_loop()
 
-        loss.calc_normals(self.state)
+        #loss.calc_normals(self.state) #already doing it in the loop
         if self.state.exp == "TL" :
             loss.calc_TL(self.state)
         if self.state.exp == "A" :

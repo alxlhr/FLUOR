@@ -22,8 +22,8 @@ def fluid_fluid(state,i,rind, theta_I) :
         rho_1 = 1028 #kg/m**3
 
 
-        thetac = np.arccos(c1/c2)
-        theta_int = np.arctan(np.sqrt( (1 - (c2/c1)**2)/((state.rho_bot*c2/(rho_1*c1))**2 - 1)  ))#intromission angle
+        #thetac = np.arccos(c1/c2)
+        #theta_int = np.arctan(np.sqrt( (1 - (c2/c1)**2)/((state.rho_bot*c2/(rho_1*c1))**2 - 1)  ))#intromission angle
 
         Z1 = rho_1*c1 / np.sin(theta1)
         Z2 = state.rho_bot*c2 / np.sin(theta2)

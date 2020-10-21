@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
+from read_arrivals_asc import *
 
 plt.rcParams.update({
     "text.usetex": True,
@@ -149,7 +150,7 @@ def show(state) :
         plt.ylim(Dmax,0)
         """
 
-        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe /home/alexandre/Documents/PreThese/Bellhop/MunkB_OneBeam")
         filename = '../Bellhop/MunkB_OneBeam.shd'
         fid = open('../Bellhop/MunkB_OneBeam.bty','r')
         theline = fid.readline()
@@ -235,10 +236,25 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         """
     if state.exp == 'A' :
-        """
-        system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_Arr")
 
-        Arr, Pos = read_arrivals_asc('../Code/MunkB_Arr.arr', 100 )
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Arr")
+
+        fid = open('../Bellhop/MunkB_Arr.bty','r')
+        theline = fid.readline()
+        theline = fid.readline()
+        n       = int( theline )
+        rbtykm  = zeros( n )
+        zbty    = zeros( n )
+        for i in range(n):
+            theline = str( fid.readline() )
+            datai = theline.split()
+            rbtykm[ i] = float( datai[0] )
+            zbty[   i] = float( datai[1] )
+        fid.close()
+
+        rbty = rbtykm
+
+        Arr, Pos = read_arrivals_asc('../Bellhop/MunkB_Arr.arr', 100 )
 
         P_ref = 1e-6
 
@@ -268,17 +284,43 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.legend(prop={'size': 20, 'weight':'bold'}, loc = 'upper center')
         plt.grid()
-        """
-        """
-        print('eigenrays : ', state.eigen_ray)
-        print('from bellhop : ',Narr)
 
+        print('eigenrays : ', state.eigen_ray)
+        #print('from bellhop : ',Narr)
+        """
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
+        theline = fid.readline()
+        theline = fid.readline()
+        n       = int( theline )
+        rbtykm  = zeros( n )
+        zbty    = zeros( n )
+        for i in range(n):
+            theline = str( fid.readline() )
+            datai = theline.split()
+            rbtykm[ i] = float( datai[0] )
+            zbty[   i] = float( datai[1] )
+        fid.close()
+
+        rbty = rbtykm
+
+        plotray('../Bellhop/MunkB_OneBeam.ray')
+        plt.plot(rbty,zbty,'m',linewidth=2)
+        plt.ylim(np.max(state.zmax),state.zmin)
+        plt.xlim(state.rmin,state.rmax/1000)
+        plt.plot(state.r_rcvr/1000,state.z_rcvr,'ro')
+        """
+        """
         plt.figure()
         for i in range(state.eigen_ray) :
             #plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
 
-            plt.plot(state.r[atten[:,state.ray_num[i]],state.ray_num[i]],state.z[atten[:,state.ray_num[i]],state.ray_num[i]],'k0')
-        """
+            plt.plot(state.r[atten[:,state.ray_num[i]],state.ray_num[i]],state.z[atten[:,state.ray_num[i]],state.ray_num[i]],'k')
+        plt.ylim(np.max(state.zmax),state.zmin)
+        plt.xlim(state.rmin,state.rmax)
+        plt.plot(state.zmax_r, state.zmax,'r',linewidth = '2')
+        plt.plot(state.r_rcvr,state.z_rcvr,'ro')
+
         print(state.eigen_ray)
 
         plt.figure()
@@ -298,6 +340,6 @@ def show(state) :
         plt.plot(state.Angle_rcvr[0:state.eigen_ray], state.Delay_rcvr[0:state.eigen_ray],'r*')
         plt.title("delay")
         plt.xlabel('rcvr angle')
-
+        """
 
     plt.show()

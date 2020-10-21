@@ -35,7 +35,7 @@ def loop(state) :
     zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
     rr = np.linspace(state.rmin,state.rmax,state.Lr)
     R, Z = np.meshgrid(rr,zz)
-    #j = 7
+    j = 7
     for j in range(state.nr) :
         print("beam %i / %i" %(j, state.nr), end = '\r')
         if (state.rays_int[j] == True) :
@@ -60,7 +60,7 @@ def loop(state) :
                     A_ = state.amp[i,j] * 1/(4*np.pi) * (-1j)**state.m[i,j] * np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))
 
                     state.P = state.P + (W_ - n_)/W_*n_val*rec * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j])
-"""
+    """
 
 def loop(state) :
     zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)

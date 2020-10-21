@@ -27,7 +27,7 @@ def apply(i,state) :
 
         #linear interpolation of the depth at that point (linterp from wikipedia)
         z_bot = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
-        print(crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:], state.zmax_r[bthy_m], state.zmax[bthy_m], state.zmax_r[bthy_M], state.zmax[bthy_M]))
+        #print(crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:], state.zmax_r[bthy_m], state.zmax[bthy_m], state.zmax_r[bthy_M], state.zmax[bthy_M]))
 
         r_out = (state.r[i+1,:] > state.rmax)
         z_bot[r_out] = state.zmax[-1] #bathy outside the domain to avoid problems with reflections
@@ -79,6 +79,8 @@ def apply(i,state) :
 
         dcdr = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],0,1, state.s_dim)
         dcdz = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],1,0, state.s_dim)
+
+        #print(z_bot)
 
         #Ray normal and tangent
         nx = -state.C[i+1,zM]*state.Y[i+1,zM]
