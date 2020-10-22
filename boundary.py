@@ -15,31 +15,24 @@ def apply(i,state) :
         tz_bt_bdy = np.zeros_like(state.z[i+1,:])
 
     elif state.rd_bathy == 1 :
-        r_out = (state.r[i+1,:] > state.rmax)
         #array (1,nr) avec les points min et max de la bathy
         bthy_m = np.argmin(state.zmax_r[:,None] < state.r[i+1,:],axis = 0)-1
         bthy_M = bthy_m + 1
 
         #depth at the point (interpolate between bthy_m and bthy_M)
-        A = np.abs(state.zmax_r[bthy_M] - state.r[i+1,:])
         B = np.abs(state.zmax_r[bthy_M] - state.zmax_r[bthy_m])
-        C = np.abs(state.zmax[bthy_m] - state.zmax[bthy_M])
 
         #linear interpolation of the depth at that point (linterp from wikipedia)
         z_bot = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
         #print(crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:], state.zmax_r[bthy_m], state.zmax[bthy_m], state.zmax_r[bthy_M], state.zmax[bthy_M]))
-
+        
         r_out = (state.r[i+1,:] > state.rmax)
         z_bot[r_out] = state.zmax[-1] #bathy outside the domain to avoid problems with reflections
-
-
-        #normal and tangent to the bathy section
-
-        zM = (state.z[i+1,:] > z_bot)
-
+      
     else :
         raise ValueError('Bad bathy option')
 
+    zM = (state.z[i+1,:] > z_bot)
     zm = (state.z[i+1,:] < state.zmin)
     indM = np.where(zM)[0]
     indm = np.where(zm)[0]
@@ -48,28 +41,13 @@ def apply(i,state) :
     state.bdy_top[i+1,:] = state.bdy_top[i,:] + np.ones((state.nr))*zm
 
     #Bottom boundary
-    if indM.size > 0 :
-
-        if state.rd_bathy == 1 :
-            """If the ray gets out of the domain"""
-            """
-            nx_bt_bdy[r_out] = 0*nx_bt_bdy[r_out]
-            nz_bt_bdy[r_out] = -1 #z > 0 upward
-            tx_bt_bdy[r_out] = nz_bt_bdy[r_out]
-            tz_bt_bdy[r_out] = -nx_bt_bdy[r_out]
-            """
-            #Precalculate normals
-            nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
-            nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
-
-
+    if indM.size > 0 :            
         if state.rd_bathy == 0 :
             ds = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
         elif state.rd_bathy == 1 :
+            nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
+            nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
             ds = recalculate_step(state, i, zM, bthy_m,nx_bt_bdy, nz_bt_bdy)
-
-        tx_bt_bdy = -nz_bt_bdy
-        tz_bt_bdy = nx_bt_bdy
 
         loop.ray_step(i,zM,ds,state)
 
@@ -80,14 +58,26 @@ def apply(i,state) :
         dcdr = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],0,1, state.s_dim)
         dcdz = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],1,0, state.s_dim)
 
-        #print(z_bot)
+        tx_bt_bdy = -nz_bt_bdy
+        tz_bt_bdy = nx_bt_bdy
 
-        #Ray normal and tangent
-        theta_I = state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy
+        #tangent : c * (X,Y)
+        #normal :  c * (-Y,X)
 
         #z > 0 upward
         alpha = state.tx[i+1,zM]*nx_bt_bdy + nz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary normal
         beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent (right handed coordinate system)
+
+        state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
+        state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
+        
+        state.tx[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
+        state.tz[i+1,zM] = state.C[i+1,zM]*state.Y[i+1,zM]
+        state.nx[i+1,zM] = -state.C[i+1,zM]*state.Y[i+1,zM]
+        state.nz[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
+
+        #Ray normal and tangent
+        theta_I = state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy
 
         cn = dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
         cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
@@ -95,14 +85,9 @@ def apply(i,state) :
         M = beta/alpha
         N = M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
 
-        state.q[i+1,zM] = state.q[i+1,zM]
-        state.p[i+1,zM] = state.p[i+1,zM] + state.q[i+1,zM] * N
-
-        #tangent : c * (X,Y)
-        #normal :  c * (-Y,X)
-
-        state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
-        state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
+        q_prev = state.q[i+1,zM].copy()
+        state.q[i+1,zM] = q_prev
+        state.p[i+1,zM] = state.p[i+1,zM] + q_prev * N
 
         #state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
         #state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
@@ -113,10 +98,6 @@ def apply(i,state) :
         state.phi[i+1,zM] = state.phi[i,zM] + np.angle(R)
 
         #Angles check
-        #nx = -state.C[i+1,zM]*state.Y[i+1,zM]
-        #nz = state.C[i+1,zM]*state.X[i+1,zM]
-        #tx = state.C[i+1,zM]*state.X[i+1,zM]
-        #tz = state.C[i+1,zM]*state.Y[i+1,zM]
 
         #theta_R = tx*nx_bt_bdy + tz*nz_bt_bdy
         #print("**********")
@@ -136,24 +117,26 @@ def apply(i,state) :
         dcdz = speed.get_der(state.f_interp,state.z[i+1,zm],state.r[i+1,zm],1,0, state.s_dim)
 
         #Ray incident normal and tangent
-        nx = -state.C[i+1,zm]*state.Y[i+1,zm]
-        nz = state.C[i+1,zm]*state.X[i+1,zm]
-        tx = state.C[i+1,zm]*state.X[i+1,zm]
-        tz = state.C[i+1,zm]*state.Y[i+1,zm]
 
-        alpha = tz #t_ray * boundary normal
-        beta = tx #t_ray * boundary tangent
+        alpha = state.tz[i+1,zm] #t_ray * boundary normal
+        beta = state.tx[i+1,zm] #t_ray * boundary tangent
 
-        cn = dcdz * nz + dcdr * nx
-        cs = dcdz * tz + dcdr * tx
+        state.Y[i+1,zm] = -state.Y[i+1,zm]
+
+        state.tx[i+1,zm] = state.C[i+1,zm]*state.X[i+1,zm]
+        state.tz[i+1,zm] = state.C[i+1,zm]*state.Y[i+1,zm]
+        state.nx[i+1,zm] = -state.C[i+1,zm]*state.Y[i+1,zm]
+        state.nz[i+1,zm] = state.C[i+1,zm]*state.X[i+1,zm]
+
+        cn = dcdz * state.nz[i+1,zm] + dcdr * state.nx[i+1,zm]
+        cs = dcdz * state.tz[i+1,zm] + dcdr * state.tx[i+1,zm]
 
         M = beta/alpha
         N = M * (4*cn - 2*M*cs)/state.C[i+1,zm]**2
 
-        state.q[i+1,zm] = state.q[i+1,zm]
-        state.p[i+1,zm] = state.p[i+1,zm] + state.q[i+1,zm] * N
-
-        state.Y[i+1,zm] = -state.Y[i+1,zm]
+        q_prev = state.q[i+1,zm].copy()
+        state.q[i+1,zm] = q_prev
+        state.p[i+1,zm] = state.p[i+1,zm] + q_prev * N
 
 
 def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
@@ -163,8 +146,6 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
 
     d_r = state.r[i+1,zM] - state.zmax_r[bthy_m[zM]]
     d_z = state.z[i+1,zM] - state.zmax[bthy_m[zM]]
-
-    #print('shape d0_r : ',np.shape(nz_bt_bdy))
 
     de_0 = d0_r * nx_bt_bdy + d0_z * nz_bt_bdy
     de = d_r * nx_bt_bdy + d_z * nz_bt_bdy
@@ -181,9 +162,6 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
         print("Problem with negative step size : ",i)
         print(zM)
         state.rays_int[ds < 0] = False
-        #print(d0_r)
-        #print(state.r[i,zM])
-        #print(d0_z)
 
     return ds
 
@@ -201,8 +179,6 @@ def calculate_normals(state) :
 
     state.tx_bt_bdy = -state.nz_bt_bdy
     state.tz_bt_bdy = state.nx_bt_bdy
-
-    #print('bthy normal angle : ',np.rad2deg(np.arctan(state.tz_bt_bdy/state.tx_bt_bdy)))
 
     #get center of the bathy sections
 
@@ -238,10 +214,6 @@ def calculate_normals(state) :
     state.tx_node = -state.nz_node
     state.tz_node = state.nx_node
 
-    #print(state.nx_node)
-    #print('norm : ', np.sqrt(state.nx_node**2 + state.nz_node**2))
-
-
 def interpolate_normals(i, state, zM, bthy_m) :
 
     #bthy_m : bathy section of each ray (nray,)
@@ -266,8 +238,6 @@ def interpolate_normals(i, state, zM, bthy_m) :
 
     state.ray_x_bdy[i+1,zM] = nx_bt_bdy
     state.ray_z_bdy[i+1,zM] = nz_bt_bdy
-
-    #print(np.rad2deg(np.arctan(-nx_bt_bdy/nz_bt_bdy)))
 
     return nx_bt_bdy, nz_bt_bdy
 

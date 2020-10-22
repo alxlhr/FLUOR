@@ -33,5 +33,5 @@ def fluid_fluid(state,i,rind, theta_I) :
 
         #R[theta1 < theta_int] = 0
         #T[theta1 < theta_int] = 1
-        #R = 1
+        R = 1
         return R

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
+"""
 import os
 import sys
 import numpy as np
@@ -10,7 +10,7 @@ sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
 from read_arrivals_asc import *
-
+"""
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",
@@ -148,7 +148,7 @@ def show(state) :
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
         plt.ylim(Dmax,0)
-        """
+        
 
         os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe /home/alexandre/Documents/PreThese/Bellhop/MunkB_OneBeam")
         filename = '../Bellhop/MunkB_OneBeam.shd'
@@ -196,13 +196,13 @@ def show(state) :
         #plt.xlim(state.rmin,state.rmax/1000)
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-
+        """
         zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
         rr = np.linspace(state.rmin,state.rmax,state.Lr)
         R, Z = np.meshgrid(rr,zz)
 
         plt.figure(figsize = (10,8))
-        plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120)
+        plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120, shading = 'nearest')
         plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
         cbar=plt.colorbar()
         cbar.ax.invert_yaxis()
@@ -218,10 +218,14 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
 
         if state.rd_bathy == 1 :
-            plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '2')
+            plt.plot(state.zmax_r/1000, state.zmax,'m',linewidth = '2')
             #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
-
+        plt.figure()
+        plt.plot(state.r[:,7], state.q[:,7],'k')
+        plt.figure()
+        plt.plot(state.r[:,7], state.p[:,7],'r')
+        """
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)
         plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
@@ -236,7 +240,7 @@ def show(state) :
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
-
+        """
     if state.exp == 'A' :
 
         os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Arr")

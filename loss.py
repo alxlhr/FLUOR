@@ -11,7 +11,9 @@ def calc_normals(state) :
 
 
 def calc_TL(state) :
-    state.W = np.abs(state.q * state.dangle0[np.newaxis,:])
+    #state.dangle0 = np.zeros_like(state.q)
+    #state.dangle0[:,1:] = (state.angle[:,1:] - state.angle[:,:-1])
+    state.W = np.abs(state.q * state.dangle0[None,:])
     state.P = np.zeros((state.Lz,state.Lr))
     zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
     rr = np.linspace(state.rmin,state.rmax,state.Lr)
@@ -35,13 +37,13 @@ def loop(state) :
     zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
     rr = np.linspace(state.rmin,state.rmax,state.Lr)
     R, Z = np.meshgrid(rr,zz)
-    rec = np.zeros_like(R)
+    rec = np.zeros_like(R, dtype = bool)
     n_ = np.zeros_like(R)
     #s_ = np.zeros_like(R)
     T_ = np.zeros_like(R)
     q_ = np.zeros_like(R)
     al = np.zeros_like(R)
-    W_ = np.zeros_like(R)
+    #W_ = np.zeros_like(R)
     r_ = np.zeros_like(R)
     n_val = np.zeros_like(R)
     A_ = np.zeros_like(R, dtype=complex)
@@ -50,13 +52,14 @@ def loop(state) :
     #for j in range(state.nr) :
     print("beam %i / %i" %(j, state.nr), end = '\r')
     if (state.rays_int[j] == True) :
-        for i in range(2,state.n_max) :
+        for i in range(2,state.n_max-1) :
             if state.W[i,j] > 0:
                 #coords influenced by the ray j between i and i+1
-                rec[:,:] = ((R >= state.r[i-1,j]) & (R < state.r[i,j]))
-                #normal distance between those points and segment i
+                rec[:,:] = ((R >= state.r[i,j]) & (R < state.r[i+1,j]))
+                #normal distance all the points and segment i
 
                 n_[:,:] = np.abs( (R - state.r[i,j])*state.nx[i,j] + (Z - state.z[i,j])*state.nz[i,j])
+
                 #print(np.shape(n_))
                 #along ray coordinate
                 #s_[:,:] = (R - state.r[i-1,j])*state.tx[i-1,j] + (Z - state.z[i-1,j])*state.tz[i-1,j]
@@ -65,23 +68,28 @@ def loop(state) :
 
                 T_[:,:] = state.T[i-1,j] + al * (state.T[i,j] - state.T[i-1,j])
                 q_[:,:] = state.q[i-1,j] + al * (state.q[i,j] - state.q[i-1,j])
-                W_[:,:] = state.W[i-1,j] + al * (state.W[i,j] - state.W[i-1,j])
+                W_ = state.W[i,j] #+ al * (state.W[i,j] - state.W[i-1,j])
                 r_[:,:] = state.r[i-1,j] + al * (state.r[i,j] - state.r[i-1,j])
 
-                n_val[:,:] = (n_ <= W_)
+                n_val[:,:] = (W_ - n_*rec)/W_*rec
+                n_val[n_val < 0] = 0
 
                 A_[:,:] = state.amp[i,j] * 1/(4*np.pi) * (-1j)**state.m[i,j] * np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))
                 """
-                print(state.q[i,j])
-
-                plt.figure()#, cmap = 'jet')
-                plt.pcolormesh(R,Z,np.real((W_ - n_)/W_*n_val*rec * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j])))
-                plt.colorbar()
-                plt.plot(state.r[:,j],state.z[:,j])
-                plt.show()
+                print(np.shape(n_[rec]))
+                "
+                if i > 50 :
+                    plt.figure()
+                    plt.pcolormesh(R,Z, n_val * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j]), cmap = 'jet')
+                    plt.colorbar()
+                    plt.plot(state.r[:,j],state.z[:,j])
+                    plt.plot(state.r[:,j],state.z[:,j],'k.')
+                    plt.plot(state.r[i,j], state.z[i,j],'ro')
+                    plt.ylim(200,0)
+                    plt.show()
                 """
-
-                state.P = state.P + (W_ - n_)/W_*n_val*rec * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j])
+                
+                state.P = state.P + n_val * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j])
         """
 
 def loop(state) :
