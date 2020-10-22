@@ -28,8 +28,8 @@ def Munk_c(z,x):
         eta = 2*(z - za)/B
         c = c0*(1+eps*(np.exp(-eta) + eta - 1))
 
-        c = c.T
-        print('munk : ', np.shape(c))
+	c = c.T
+	#print('munk : ', np.shape(c))
 
         return c0 * np.ones_like(z)
 
@@ -43,10 +43,11 @@ def randg(N,rL,h,cl) :
 
 def GenerateRandom(z,x, state) :
 
-        z_n = len(z)
-        x_n = len(x)
-        print(z_n, x_n)
-        #z_,x_ = np.meshgrid(z,x,indexing='ij')
+	z_n = len(z)
+	x_n = len(x)
+	#print(z_n, x_n)
+	#z_,x_ = np.meshgrid(z,x,indexing='ij')
+
 
 
         if state.load_c == 1 :
@@ -103,8 +104,8 @@ def GenerateRandom(z,x, state) :
 
 def Init(z,r,c,z_int,s_dim) :
 
-        print('shapec',np.shape(c))
-        print(np.shape(z))
+	#print('shapec',np.shape(c))
+	#print(np.shape(z))
 
         if s_dim == 1 :
                 t,cp,k = interp.splrep(z,c,k = 5)

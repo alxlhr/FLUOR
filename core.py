@@ -21,6 +21,7 @@ class core(object) :
     "core class of the ray code"
 
     def __init__(self, param) :
+ * branch            in_dev     -> FETCH_HEAD
 
         self.state = state.state(param)
         self.params = param
@@ -107,12 +108,11 @@ class core(object) :
             b = 250e3
             c = 250
 
-
             self.state.zmax_r = np.array([0,1000,1000+1000*np.sqrt(2)/2])
             #self.state.zmax_r = np.linspace(0,20e3,100)
             self.state.zmax = np.linspace(1200,1200,len(self.state.zmax_r))
-            self.state.zmax[0] = 50
-            self.state.zmax[1] = 50
+            self.state.zmax[0] = 200
+            self.state.zmax[1] = 200
             self.state.zmax[2] = 1000*np.sqrt(2)/2+200
             """
             self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 50)
