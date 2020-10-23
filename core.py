@@ -21,8 +21,6 @@ class core(object) :
     "core class of the ray code"
 
     def __init__(self, param) :
- * branch            in_dev     -> FETCH_HEAD
-
         self.state = state.state(param)
         self.params = param
         self.init_speed()

@@ -28,8 +28,8 @@ def Munk_c(z,x):
         eta = 2*(z - za)/B
         c = c0*(1+eps*(np.exp(-eta) + eta - 1))
 
-	c = c.T
-	#print('munk : ', np.shape(c))
+        c = c.T
+    #print('munk : ', np.shape(c))
 
         return c0 * np.ones_like(z)
 
@@ -43,64 +43,64 @@ def randg(N,rL,h,cl) :
 
 def GenerateRandom(z,x, state) :
 
-	z_n = len(z)
-	x_n = len(x)
-	#print(z_n, x_n)
-	#z_,x_ = np.meshgrid(z,x,indexing='ij')
+    z_n = len(z)
+    x_n = len(x)
+    #print(z_n, x_n)
+    #z_,x_ = np.meshgrid(z,x,indexing='ij')
 
 
 
-        if state.load_c == 1 :
-                #ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
-                ncf=nc.Dataset('../rec_cel_sim_m.nc')
+    if state.load_c == 1 :
+            #ncf=nc.Dataset('/home6/lheral/Documents/Stage_M2/rec_cel_n3_m.nc')
+            ncf=nc.Dataset('../rec_cel_sim_m.nc')
 
-                if state.mean_prof == 0 :
-                        c = ncf.variables['C_rec'][...]
-                        rn = state.exp_ind
-                        c = c[rn,:].T
-                else :
-                        c = ncf.variables['C_m'][...]
+            if state.mean_prof == 0 :
+                    c = ncf.variables['C_rec'][...]
+                    rn = state.exp_ind
+                    c = c[rn,:].T
+            else :
+                    c = ncf.variables['C_m'][...]
 
-                ncf.close()
+            ncf.close()
 
-        else :
-                c = Munk_c(z,x)
+    else :
+            c = Munk_c(z,x)
 
-        #if state.s_dim == 1 :
-                c = c[0,:]
+    #if state.s_dim == 1 :
+            c = c[0,:]
 
-        if state.speed_rand == True :
-                #np.random.seed(0)
+    if state.speed_rand == True :
+            #np.random.seed(0)
 
-                #dc = state.speed_std * np.real(randg(z_n, state.zmax, 1, state.speed_Lz)) * np.exp(-z**2/(500**2))
+            #dc = state.speed_std * np.real(randg(z_n, state.zmax, 1, state.speed_Lz)) * np.exp(-z**2/(500**2))
 
-                #dc = theo_modes.solve(z,c)
+            #dc = theo_modes.solve(z,c)
 
-                dc = eddy.add(x,z)
+            dc = eddy.add(x,z)
 
-                c = c + dc
+            c = c + dc
 
-                plt.figure(figsize=(10,8))
-                plt.imshow(c, extent=[0,150,0,5000],aspect='auto',cmap='jet',origin='lower')
-                cb = plt.colorbar()
-                cb.ax.tick_params(labelsize=17)
-                cb.set_label('\\textbf{sound speed (m/s)}', rotation=270, fontsize = 17, labelpad = 18)
-                plt.ylim(5000,0)
-                plt.ylabel('depth (m)')
-                plt.xlabel('range (km)')
-                plt.xlabel('\\textbf{range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
-                plt.ylabel('\\textbf{depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
-                plt.xticks(fontsize = 17)
-                plt.yticks(fontsize = 17)
-                plt.tick_params(width = 2, length = 4)
-                plt.show()
+            plt.figure(figsize=(10,8))
+            plt.imshow(c, extent=[0,150,0,5000],aspect='auto',cmap='jet',origin='lower')
+            cb = plt.colorbar()
+            cb.ax.tick_params(labelsize=17)
+            cb.set_label('\\textbf{sound speed (m/s)}', rotation=270, fontsize = 17, labelpad = 18)
+            plt.ylim(5000,0)
+            plt.ylabel('depth (m)')
+            plt.xlabel('range (km)')
+            plt.xlabel('\\textbf{range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
+            plt.ylabel('\\textbf{depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
+            plt.xticks(fontsize = 17)
+            plt.yticks(fontsize = 17)
+            plt.tick_params(width = 2, length = 4)
+            plt.show()
 
 
-        """
+    """
 
-        """
+    """
 
-        return c
+    return c
 
 def Init(z,r,c,z_int,s_dim) :
 
