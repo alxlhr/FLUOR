@@ -60,7 +60,7 @@ def apply(i,state) :
 
         tx_bt_bdy = -nz_bt_bdy
         tz_bt_bdy = nx_bt_bdy
-
+        """
         print('***')
         print('nbx',nx_bt_bdy)
         print('nbz',nz_bt_bdy)
@@ -71,7 +71,7 @@ def apply(i,state) :
         print('nrz',state.nz[i+1,zM])
         print('trx',state.tx[i+1,zM])
         print('trz',state.tz[i+1,zM])
-
+        """
         #tangent : c * (X,Y)
         #normal :  c * (-Y,X)
 
@@ -164,19 +164,16 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
     de_0 = d0_r * nx_bt_bdy + d0_z * nz_bt_bdy
     de = d_r * nx_bt_bdy + d_z * nz_bt_bdy
 
-    tx = state.C[i,zM]*state.X[i,zM]
-    tz = state.C[i,zM]*state.Y[i,zM]
-
     dh = - de_0 / (-de_0 + de) * state.ds0[zM]
 
     ds = np.zeros_like(state.ds0)
-    ds[zM] = - de_0 / (tx*nx_bt_bdy + tz*nz_bt_bdy)
-
+    ds[zM] = - de_0 / (state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
+    """
     if (np.any(ds < 0)) :
         print("Problem with negative step size : ",i)
         print(zM)
         state.rays_int[ds < 0] = False
-
+    """
     return ds
 
 
@@ -184,10 +181,10 @@ def calculate_normals(state) :
 
     dzmax = np.diff(state.zmax)
     drmax = np.diff(state.zmax_r)
-
+    """
     print('dzmax : ',dzmax)
     print('drmax : ',drmax)
-
+    """
     alpha_r = np.arctan(dzmax/drmax)
 
     #normal to the bathy section

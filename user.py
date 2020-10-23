@@ -23,10 +23,10 @@ def run() :
         print("Run " + str(i))
         print("####################")
 
-        nr = 10
+        nr = 100
 
-        param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 1000+1000*np.sqrt(2)/2, 'zmax' : 1200,
-                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 1, 'f' : 1000, 'Lr' : 400, 'Lz' : 400,
+        param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1200,
+                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 10, 'f' : 1000, 'Lr' : 200, 'Lz' : 200,
                  'exp' : "TL",
                  'r_rcvr' : 18e3, 'z_rcvr' : 100,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code
@@ -45,7 +45,7 @@ def run() :
                  'load_c' : 1,
                  'use_fortran' : 0, #speedup some functions, not ready yet
                  'range_dependent_bathy' : 1, #needs to load the bathy somewhere
-                 'bathy_linterp' : 0, #interpolates linearly the bathymetry normals
+                 'bathy_linterp' : 1, #interpolates linearly the bathymetry normals
                  'bathy_file' : '../gebco_2020_n38.3_s37.8_w15.3_e15.8.nc',
                  'c_bot' : 1600,
                  'rho_bot' : 2000

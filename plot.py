@@ -27,7 +27,7 @@ def show(state) :
 
     if state.exp == "R" :
 
-
+        """
         os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_OneBeam")
         fid = open('../Bellhop/MunkB_OneBeam.bty','r')
         theline = fid.readline()
@@ -46,6 +46,7 @@ def show(state) :
 
         plotray('../Bellhop/MunkB_OneBeam.ray')
         plot(rbty,zbty,'m',linewidth=2)
+        """
 
         #plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
@@ -205,7 +206,7 @@ def show(state) :
 
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120, shading = 'nearest')
-        plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
+        #plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
         cbar=plt.colorbar()
         cbar.ax.invert_yaxis()
         cbar.ax.tick_params(labelsize=17)
@@ -246,7 +247,7 @@ def show(state) :
         """
 
     if state.exp == 'A' :
-
+        """
         os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_Arr")
 
         fid = open('../Bellhop_exp/MunkB_Arr.bty','r')
@@ -294,7 +295,7 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.legend(prop={'size': 20, 'weight':'bold'}, loc = 'upper center')
         plt.grid()
-
+        """
         print('eigenrays : ', state.eigen_ray)
         #print('from bellhop : ',Narr)
         """
@@ -320,7 +321,7 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
         plt.plot(state.r_rcvr/1000,state.z_rcvr,'ro')
         """
-        """
+        
         plt.figure()
         for i in range(state.eigen_ray) :
             #plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
@@ -350,6 +351,6 @@ def show(state) :
         plt.plot(state.Angle_rcvr[0:state.eigen_ray], state.Delay_rcvr[0:state.eigen_ray],'r*')
         plt.title("delay")
         plt.xlabel('rcvr angle')
-        """
+        
 
     plt.show()
