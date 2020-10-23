@@ -183,8 +183,6 @@ def ray_step(i,j,ds,state) :
     state.amp[i+1,j] = state.amp[i,j]
     state.phi[i+1,j] = state.phi[i,j]
 
-    #print(state.tz[i+1,j])
-
     """
     print("*****")
     print(i)

@@ -61,13 +61,33 @@ def apply(i,state) :
         tx_bt_bdy = -nz_bt_bdy
         tz_bt_bdy = nx_bt_bdy
 
+        print('***')
+        print('nbx',nx_bt_bdy)
+        print('nbz',nz_bt_bdy)
+        print('tbx',tx_bt_bdy)
+        print('tbz',tz_bt_bdy)
+
+        print('nrx',state.nx[i+1,zM])
+        print('nrz',state.nz[i+1,zM])
+        print('trx',state.tx[i+1,zM])
+        print('trz',state.tz[i+1,zM])
+
         #tangent : c * (X,Y)
         #normal :  c * (-Y,X)
 
-        #z > 0 upward
+        #z increases downwards
+
+        #Incident
         alpha = state.tx[i+1,zM]*nx_bt_bdy + nz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary normal
         beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent (right handed coordinate system)
 
+        cn = - dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM] #Je comprends pas le - là !!!
+        cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
+
+        M = beta/alpha
+        N = M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
+
+        #Reflected
         state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
         state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
         
@@ -78,12 +98,6 @@ def apply(i,state) :
 
         #Ray normal and tangent
         theta_I = state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy
-
-        cn = dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
-        cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
-
-        M = beta/alpha
-        N = M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
 
         q_prev = state.q[i+1,zM].copy()
         state.q[i+1,zM] = q_prev
@@ -99,7 +113,7 @@ def apply(i,state) :
 
         #Angles check
 
-        #theta_R = tx*nx_bt_bdy + tz*nz_bt_bdy
+        theta_R = state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy
         #print("**********")
         #print("I : ", theta_I)
         #print("R : ", theta_R)
@@ -171,10 +185,13 @@ def calculate_normals(state) :
     dzmax = np.diff(state.zmax)
     drmax = np.diff(state.zmax_r)
 
-    alpha_r = -np.arctan(dzmax/drmax)
+    print('dzmax : ',dzmax)
+    print('drmax : ',drmax)
+
+    alpha_r = np.arctan(dzmax/drmax)
 
     #normal to the bathy section
-    state.nx_bt_bdy = -np.sin(alpha_r)
+    state.nx_bt_bdy = np.sin(alpha_r)
     state.nz_bt_bdy = -np.cos(alpha_r) #z > 0 upward
 
     state.tx_bt_bdy = -state.nz_bt_bdy
@@ -183,8 +200,8 @@ def calculate_normals(state) :
     #get center of the bathy sections
 
     dl = np.sqrt(dzmax**2 + drmax**2)
-    state.z_c = dl/2 * np.sin(-alpha_r) + state.zmax[:-1]
-    state.r_c =  dl/2 * np.cos(-alpha_r) + state.zmax_r[:-1]
+    state.z_c = dl/2 * np.sin(alpha_r) + state.zmax[:-1]
+    state.r_c =  dl/2 * np.cos(alpha_r) + state.zmax_r[:-1]
 
     #Get normals at the nodes
 
