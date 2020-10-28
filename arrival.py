@@ -29,7 +29,7 @@ def calc_arr(state) :
     print('     Arrivals done       ')
     print(' ')
 
-
+"""
 def loop(state) :
     for j in range(state.nr) :
         if (state.rays_int[j] == True) :
@@ -69,3 +69,4 @@ def loop(state) :
                         state.ray_num[state.eigen_ray] = j
 
                         state.eigen_ray = state.eigen_ray + 1
+"""

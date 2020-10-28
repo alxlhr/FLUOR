@@ -23,12 +23,14 @@ def apply(i,state) :
         B = np.abs(state.zmax_r[bthy_M] - state.zmax_r[bthy_m])
 
         #linear interpolation of the depth at that point (linterp from wikipedia)
-        z_bot = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
+        state.z_bot[i+1,:] = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
+        state.r_bot[i+1:] = state.zmax_r[bthy_M] - (state.zmax_r[bthy_M] - state.zmax_r[bthy_m]) * (state.z_bot[i+1,:] - state.zmax[bthy_M]) / (state.zmax[bthy_m] - state.zmax[bthy_M])
+        z_bot = state.z_bot[i+1,:].copy()
         #print(crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:], state.zmax_r[bthy_m], state.zmax[bthy_m], state.zmax_r[bthy_M], state.zmax[bthy_M]))
-        
+
         r_out = (state.r[i+1,:] > state.rmax)
         z_bot[r_out] = state.zmax[-1] #bathy outside the domain to avoid problems with reflections
-      
+
     else :
         raise ValueError('Bad bathy option')
 
@@ -41,13 +43,14 @@ def apply(i,state) :
     state.bdy_top[i+1,:] = state.bdy_top[i,:] + np.ones((state.nr))*zm
 
     #Bottom boundary
-    if indM.size > 0 :            
+    if indM.size > 0 :
         if state.rd_bathy == 0 :
             ds = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
         elif state.rd_bathy == 1 :
             nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
             nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
-            ds = recalculate_step(state, i, zM, bthy_m,nx_bt_bdy, nz_bt_bdy)
+
+            ds = recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy)
 
         loop.ray_step(i,zM,ds,state)
 
@@ -81,16 +84,19 @@ def apply(i,state) :
         alpha = state.tx[i+1,zM]*nx_bt_bdy + nz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary normal
         beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent (right handed coordinate system)
 
-        cn = - dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM] #Je comprends pas le - là !!!
+        cn = dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
         cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
 
         M = beta/alpha
         N = M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
 
         #Reflected
-        state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
-        state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
-        
+        #state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
+        #state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
+
+        state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
+        state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
+
         state.tx[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
         state.tz[i+1,zM] = state.C[i+1,zM]*state.Y[i+1,zM]
         state.nx[i+1,zM] = -state.C[i+1,zM]*state.Y[i+1,zM]
@@ -103,8 +109,6 @@ def apply(i,state) :
         state.q[i+1,zM] = q_prev
         state.p[i+1,zM] = state.p[i+1,zM] + q_prev * N
 
-        #state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
-        #state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
 
         #boundary losses
         R = bdy_loss.fluid_fluid(state,i,zM,theta_I)
@@ -117,7 +121,7 @@ def apply(i,state) :
         #print("**********")
         #print("I : ", theta_I)
         #print("R : ", theta_R)
-        #chck_ang = theta_I + theta_R < 1e-12
+        #chck_ang = theta_I - theta_R < 1e-12
         #if (np.any(chck_ang == False)) :
         #    print("Problem with incident/reflected angles : ",i)
 
@@ -153,7 +157,7 @@ def apply(i,state) :
         state.p[i+1,zm] = state.p[i+1,zm] + q_prev * N
 
 
-def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
+def recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
 
     d0_r = state.r[i,zM] - state.zmax_r[bthy_m[zM]]
     d0_z = state.z[i,zM] - state.zmax[bthy_m[zM]]
@@ -165,14 +169,23 @@ def recalculate_step(state, i, zM, bthy_m, nx_bt_bdy, nz_bt_bdy) :
     de = d_r * nx_bt_bdy + d_z * nz_bt_bdy
 
     dh = - de_0 / (-de_0 + de) * state.ds0[zM]
+    #dh[np.abs(de_0) < 1e-9] = 0
+    #dh[np.abs(de) < 1e-9] = 0
 
     ds = np.zeros_like(state.ds0)
-    ds[zM] = - de_0 / (state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
+    ds[zM] = dh#de_0 / (state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
+    #print(np.min((state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)))
+
     """
     if (np.any(ds < 0)) :
         print("Problem with negative step size : ",i)
-        print(zM)
-        state.rays_int[ds < 0] = False
+        print('delta_0 : ', de_0)
+        print('delta : ', de)
+        print('nx :', state.nx[i,zM])
+        print('nz :', state.nz[i,zM])
+
+        #print(zM)
+    #    state.amp[i,ds < 0] = 0
     """
     return ds
 
@@ -242,8 +255,8 @@ def interpolate_normals(i, state, zM, bthy_m) :
     dist_m = np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]])**2+(state.z[i+1,zM] - state.zmax[bthy_m[zM]])**2)  #(zM,)
     dist_p =  np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]+1])**2+(state.z[i+1,zM] - state.zmax[bthy_m[zM]+1])**2)  #(zM,)
 
-    nx_bt_bdy = state.nx_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
-    nz_bt_bdy = state.nz_node[bthy_m[zM]] * ( dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * (1- dist_p  / dist_nodes)
+    nx_bt_bdy = state.nx_node[bthy_m[zM]] * (dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * (1-dist_p  / dist_nodes)
+    nz_bt_bdy = state.nz_node[bthy_m[zM]] * (dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * (1-dist_p  / dist_nodes)
 
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
 

@@ -1,17 +1,17 @@
 import matplotlib.pyplot as plt
 import numpy as np
-"""
+
 import os
 import sys
 import numpy as np
 from scipy.io import *
 import matplotlib.pyplot as plt
-#sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
-sys.path.append("/home6/lheral/Documents/Stage_M2/Bellhop/Orlando_Python/at/Python/")
+sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
+#sys.path.append("/home6/lheral/Documents/Stage_M2/Bellhop/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
 from read_arrivals_asc import *
-"""
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",
@@ -27,9 +27,10 @@ def show(state) :
 
     if state.exp == "R" :
 
-        """
-        os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_OneBeam")
-        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
+
+        #os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_OneBeam")
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Rays")
+        fid = open('../Bellhop/MunkB_Rays.bty','r')
         theline = fid.readline()
         theline = fid.readline()
         n       = int( theline )
@@ -44,21 +45,21 @@ def show(state) :
 
         rbty = rbtykm
 
-        plotray('../Bellhop/MunkB_OneBeam.ray')
-        plot(rbty,zbty,'m',linewidth=2)
-        """
+        #plotray('../Bellhop/MunkB_Rays.ray')
+        #plot(rbty,zbty,'m',linewidth=2)
+
 
         #plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
         #plotray('../Code/MunkB_ray.ray')
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-        for i in range(state.nr) :
-            if state.rays_int[i] == False :
-                continue
-            plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'r--', linewidth = '1')
-            print(i)
-        #plt.plot(state.r/1000,state.z,'bo', linewidth = '1')
+        #for i in range(state.nr) :
+        #    if state.rays_int[i] == False :
+        #        continue
+        plt.plot(state.r/1000,state.z,'r', linewidth = '1')
+        #    print(i)
+        plt.plot(state.r/1000,state.z,'ro', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.xticks(fontsize = 17)
@@ -71,19 +72,19 @@ def show(state) :
 
             plt.plot(state.zmax_r/1000, state.zmax,'b--',linewidth = '2')
 
-            #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
+            plt.plot(state.zmax_r/1000, state.zmax, 'bo')
 
             #plt.plot(state.r_c/1000, state.z_c, 'mo')
 
             #plt.plot(np.array([state.z_c, state.z_c+state.nx_bt_bdy*100])/1000, np.array([state.z_c, state.z_c+state.nz_bt_bdy*100]), 'm-')
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_bt_bdy[:-1]*100])/1000, np.array([state.zmax, state.zmax+state.tz_bt_bdy[:-1]*100]), 'm-')
-            """
-            plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
-            plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
 
-            for i in range(state.nr) :
-                plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'm-')
-
+            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
+            #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
+            #plt.plot(state.r_bot/1000, state.z_bot, 'ko')
+            #for i in range(state.nr) :
+            #    plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'm-')
+        """
         #plt.grid()
 
         plt.figure()
@@ -150,11 +151,11 @@ def show(state) :
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
         plt.ylim(Dmax,0)
-        
+        """
 
-        os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_OneBeam")
-        filename = '../Bellhop_exp/MunkB_OneBeam.shd'
-        fid = open('../Bellhop_exp/MunkB_OneBeam.bty','r')
+        os.system("//home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
+        filename = '../Bellhop/MunkB_OneBeam.shd'
+        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
         theline = fid.readline()
         theline = fid.readline()
         n       = int( theline )
@@ -186,7 +187,7 @@ def show(state) :
         tl[tl > 120.0] = 120.0
 
         print(rbty)
-        
+
 
         plt.figure(figsize = (10,8))
         plt.imshow(tl,extent=[0,rmaxkm,0,Dmax],aspect='auto',cmap='jet_r',origin='lower',vmin=40,vmax=120)
@@ -199,13 +200,13 @@ def show(state) :
         #plt.xlim(state.rmin,state.rmax/1000)
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-        """
+
         zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
         rr = np.linspace(state.rmin,state.rmax,state.Lr)
         R, Z = np.meshgrid(rr,zz)
 
         plt.figure(figsize = (10,8))
-        plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120, shading = 'nearest')
+        plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120)#, shading = 'nearest')
         #plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
         cbar=plt.colorbar()
         cbar.ax.invert_yaxis()
@@ -221,7 +222,7 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
 
         if state.rd_bathy == 1 :
-            plt.plot(state.zmax_r/1000, state.zmax,'m',linewidth = '2')
+            plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '4')
             #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
         plt.figure()
@@ -229,10 +230,10 @@ def show(state) :
         plt.figure()
         plt.plot(state.r[:,7], state.p[:,7],'r')
 
-        """
+
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)
-        plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
+        #plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
         cbar=plt.colorbar()
         cbar.ax.tick_params(labelsize=17)
         cbar.set_label('\\textbf{TL difference (dB)}', rotation=270, fontsize = 17, labelpad = 14)
@@ -244,7 +245,9 @@ def show(state) :
         plt.xticks(fontsize = 17)
         plt.yticks(fontsize = 17)
         plt.tick_params(width = 2, length = 4)
-        """
+        if state.rd_bathy == 1 :
+            plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '4')
+
 
     if state.exp == 'A' :
         """
@@ -321,7 +324,7 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
         plt.plot(state.r_rcvr/1000,state.z_rcvr,'ro')
         """
-        
+
         plt.figure()
         for i in range(state.eigen_ray) :
             #plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
@@ -351,6 +354,6 @@ def show(state) :
         plt.plot(state.Angle_rcvr[0:state.eigen_ray], state.Delay_rcvr[0:state.eigen_ray],'r*')
         plt.title("delay")
         plt.xlabel('rcvr angle')
-        
+
 
     plt.show()

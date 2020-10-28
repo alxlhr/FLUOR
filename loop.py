@@ -6,7 +6,7 @@ def ray_step(i,j,ds,state) :
 
     #print(np.shape(ds))
     out = (state.r[i,:] < state.rmax)
-    #out = (state.r[i,:] > state.rmin) & out 
+    #out = (state.r[i,:] > state.rmin) & out
     #print(out)
     j = j & out
     ds = ds[j]
@@ -95,6 +95,7 @@ def ray_step(i,j,ds,state) :
     state.Y[i+1,j] = state.Y[i,j] + ds/6* (dY_1 + 2*dY_2 + 2*dY_3 + dY_4)  #zeta
 
     #TODO : bad practice, switch to masked array (worth it ?)
+
     state.r[i+1,np.invert(out)] = np.nan
     state.z[i+1,np.invert(out)] = np.nan
 
@@ -190,5 +191,5 @@ def ray_step(i,j,ds,state) :
     print("*****")
     print(i)
     print(state.tx[i+1,j])
-    
+
     """
