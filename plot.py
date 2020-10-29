@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-
+"""
 import os
 import sys
 import numpy as np
@@ -11,7 +11,7 @@ sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
 from read_arrivals_asc import *
-
+"""
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",
@@ -29,6 +29,7 @@ def show(state) :
 
 
         #os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_OneBeam")
+        """
         os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Rays")
         fid = open('../Bellhop/MunkB_Rays.bty','r')
         theline = fid.readline()
@@ -47,7 +48,7 @@ def show(state) :
 
         #plotray('../Bellhop/MunkB_Rays.ray')
         #plot(rbty,zbty,'m',linewidth=2)
-
+        """
 
         #plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
@@ -82,8 +83,8 @@ def show(state) :
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
             #plt.plot(state.r_bot/1000, state.z_bot, 'ko')
-            for i in range(state.nr) :
-                plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]]), 'm-')
+            #for i in range(state.nr) :
+            #    plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]]), 'm-')
         """
         #plt.grid()
 
@@ -152,7 +153,7 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.ylim(Dmax,0)
         """
-
+        """
         os.system("//home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
         filename = '../Bellhop/MunkB_OneBeam.shd'
         fid = open('../Bellhop/MunkB_OneBeam.bty','r')
@@ -185,9 +186,7 @@ def show(state) :
         tl = -20*np.log10( abs( p_b ) )
 
         tl[tl > 120.0] = 120.0
-
-        print(rbty)
-
+        
 
         plt.figure(figsize = (10,8))
         plt.imshow(tl,extent=[0,rmaxkm,0,Dmax],aspect='auto',cmap='jet_r',origin='lower',vmin=40,vmax=120)
@@ -200,7 +199,7 @@ def show(state) :
         #plt.xlim(state.rmin,state.rmax/1000)
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-
+        """
         zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
         rr = np.linspace(state.rmin,state.rmax,state.Lr)
         R, Z = np.meshgrid(rr,zz)
@@ -230,7 +229,7 @@ def show(state) :
         plt.figure()
         plt.plot(state.r[:,7], state.p[:,7],'r')
 
-
+        """
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)
         #plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
@@ -247,7 +246,7 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         if state.rd_bathy == 1 :
             plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '4')
-
+        """
 
     if state.exp == 'A' :
         """

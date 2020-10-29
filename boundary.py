@@ -26,7 +26,6 @@ def apply(i,state) :
         state.z_bot[i+1,:] = (state.zmax[bthy_m] * ( state.zmax_r[bthy_M] - state.r[i+1,:] ) + state.zmax[bthy_M] * ( state.r[i+1,:] - state.zmax_r[bthy_m] ) )/ B
         state.r_bot[i+1:] = state.zmax_r[bthy_M] - (state.zmax_r[bthy_M] - state.zmax_r[bthy_m]) * (state.z_bot[i+1,:] - state.zmax[bthy_M]) / (state.zmax[bthy_m] - state.zmax[bthy_M])
         z_bot = state.z_bot[i+1,:].copy()
-        #print(crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:], state.zmax_r[bthy_m], state.zmax[bthy_m], state.zmax_r[bthy_M], state.zmax[bthy_M]))
 
         r_out = (state.r[i+1,:] > state.rmax)
         z_bot[r_out] = state.zmax[-1] #bathy outside the domain to avoid problems with reflections
@@ -50,12 +49,10 @@ def apply(i,state) :
             nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
             nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
 
-            ds = recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy)
+            #ds = recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy)
 
-        print(state.angle[i+1,:])
-        loop.ray_step(i,zM,ds,state)
-        print(state.angle[i+1,:])
-        print()
+        #loop.ray_step(i,zM,ds,state)
+        reflexion_interp(state,zM,i,bthy_m, bthy_M)
 
         #If linterp, recalculate normals
         if state.bathy_linterp == 1 :
@@ -66,18 +63,7 @@ def apply(i,state) :
 
         tx_bt_bdy = -nz_bt_bdy
         tz_bt_bdy = nx_bt_bdy
-        """
-        print('***')
-        print('nbx',nx_bt_bdy)
-        print('nbz',nz_bt_bdy)
-        print('tbx',tx_bt_bdy)
-        print('tbz',tz_bt_bdy)
 
-        print('nrx',state.nx[i+1,zM])
-        print('nrz',state.nz[i+1,zM])
-        print('trx',state.tx[i+1,zM])
-        print('trz',state.tz[i+1,zM])
-        """
         #tangent : c * (X,Y)
         #normal :  c * (-Y,X)
 
@@ -124,9 +110,9 @@ def apply(i,state) :
         #print("**********")
         #print("I : ", theta_I)
         #print("R : ", theta_R)
-        #chck_ang = theta_I - theta_R < 1e-12
-        #if (np.any(chck_ang == False)) :
-        #    print("Problem with incident/reflected angles : ",i)
+        chck_ang = theta_I - theta_R < 1e-12
+        if (np.any(chck_ang == False)) :
+            print("Problem with incident/reflected angles : ",i)
 
     #Top boundary
     if indm.size > 0 :
@@ -177,34 +163,81 @@ def recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
 
     ds = np.zeros_like(state.ds0)
     ds[zM] = dh#de_0 / np.abs(state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
-    #print(np.min((state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)))
-    #print(crossing_depth(state.r[i,zM],state.z[i,zM],state.r[i+1,zM],state.z[i+1,zM], state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]], state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]]))
 
-
-    #print(de)
-
-    """
-    if (np.any(ds < 0)) :
-        print("Problem with negative step size : ",i)
-        print('delta_0 : ', de_0)
-        print('delta : ', de)
-        print('nx :', state.nx[i,zM])
-        print('nz :', state.nz[i,zM])
-
-        #print(zM)
-    #    state.amp[i,ds < 0] = 0
-    """
     return ds
+
+def get_intersect(a1, a2, b1, b2):
+    """ 
+    Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
+    a1: [x, y] a point on the first line
+    a2: [x, y] another point on the first line
+    b1: [x, y] a point on the second line
+    b2: [x, y] another point on the second line
+    """
+    s = np.vstack([a1,a2,b1,b2])        # s for stacked
+    h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
+    l1 = np.cross(h[0], h[1])           # get first line
+    l2 = np.cross(h[2], h[3])           # get second line
+    x, y, z = np.cross(l1, l2)          # point of intersection
+    if z == 0:                          # lines are parallel
+        return (float('inf'), float('inf'))
+    return (x/z, y/z)
+
+def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
+    [rb,zb] = crossing_depth(state.r[i,zM],state.z[i,zM],state.r[i+1,zM],state.z[i+1,zM], state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]], state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]])
+    """
+    int_rb = np.zeros_like(zM)
+    int_zb = np.zeros_like(zM)
+
+    r1 = np.array([state.r[i,zM],state.z[i,zM]])
+    r2 = np.array([state.r[i+1,zM],state.z[i+1,zM]])
+    b1 = np.array([state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]]])
+    b2 = np.array([state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]]])
+
+    for l in range(len(r1)) :
+        [int_rb[l],int_zb[l]] = get_intersect(r1[l,:],r2[l,:],b1[l,:],b2[l,:])
+    """
+    
+    r_m = state.r[i,zM].copy()
+    z_m = state.z[i,zM].copy()
+    r_p = state.r[i+1,zM].copy()
+    z_p = state.z[i+1,zM].copy()
+
+    dist_r = rb - r_m
+    dist_z = zb - z_m
+
+    print(rb, zb)
+
+    dray = dist_r*state.tx[i,zM] + dist_z*state.tz[i,zM] #distance along the ray
+
+    alpha = dray/state.ds0[zM] #linterp coef
+    alpha[alpha > 1] = 1
+
+    state.r[i+1,zM] = rb
+    state.z[i+1,zM] = zb
+
+    state.X[i+1,zM] = state.X[i,zM]*alpha + (1-alpha)*state.X[i+1,zM]
+    state.Y[i+1,zM] = state.Y[i,zM]*alpha + (1-alpha)*state.Y[i+1,zM]
+
+    state.p[i+1,zM] = state.p[i,zM]*alpha + (1-alpha)*state.p[i+1,zM]
+    state.q[i+1,zM] = state.q[i,zM]*alpha + (1-alpha)*state.q[i+1,zM]
+
+    state.T[i+1,zM] = state.T[i,zM]*alpha + (1-alpha)*state.T[i+1,zM]
+    state.angle[i+1,zM] = np.arctan((state.z[i+1,zM] - state.z[i,zM])/(state.r[i+1,zM] - state.r[i,zM]))
+
+    state.tx[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
+    state.tz[i+1,zM] = state.C[i+1,zM]*state.Y[i+1,zM]
+    state.nx[i+1,zM] = -state.C[i+1,zM]*state.Y[i+1,zM]
+    state.nz[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
+    
+    
 
 
 def calculate_normals(state) :
 
     dzmax = np.diff(state.zmax)
     drmax = np.diff(state.zmax_r)
-    """
-    print('dzmax : ',dzmax)
-    print('drmax : ',drmax)
-    """
+
     alpha_r = np.arctan(dzmax/drmax)
 
     #normal to the bathy section
@@ -277,5 +310,7 @@ def interpolate_normals(i, state, zM, bthy_m) :
 
 
 def crossing_depth(x1, y1, x2, y2, x3, y3, x4, y4) :
-    z_bot = ((x1*y2 - y1*x2) * (y3 - y4) - (y1 - y2) * (x3*y4 - y3*x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
-    return z_bot
+
+    z_bot = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
+    r_bot = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4) ) / ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4) )
+    return r_bot,z_bot

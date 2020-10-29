@@ -108,19 +108,19 @@ class core(object) :
             b = 250e3
             c = 250
 
-            """
-            self.state.zmax_r = np.array([0,1000,1000+1000*np.sqrt(2)/2])
-            print(1000+1000*np.sqrt(2)/2)
+            
+            #self.state.zmax_r = np.array([0,1000,1000+1000*np.sqrt(2)/2])
+            #print(1000+1000*np.sqrt(2)/2)
             #self.state.zmax_r = np.linspace(0,20e3,100)
-            self.state.zmax = np.linspace(1200,1200,len(self.state.zmax_r))
-            self.state.zmax[0] = 50
-            self.state.zmax[1] = 100
-            self.state.zmax[2] = 1000*np.sqrt(2)/2+200
-            print(self.state.zmax[2])
+            #self.state.zmax = np.linspace(1200,1200,len(self.state.zmax_r))
+            #self.state.zmax[0] = 50
+            #self.state.zmax[1] = 100
+            #self.state.zmax[2] = 1000*np.sqrt(2)/2+200
+            #print(self.state.zmax[2])
 
-            self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 50)
-            self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
-            """
+            #self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 500)
+            #self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
+            
             boundary.calculate_normals(self.state)
 
     def check_res(self) :

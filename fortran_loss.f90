@@ -32,7 +32,7 @@ subroutine loop(Lz,Lr,nr,nmax,W, Rr, Zz, r, z, nx, nz, tx, tz, T, q, f, phi, c0,
           !columns of R
            do rl = 1,Lr-1
               !write (out_unit,*) Rr(1,rl)
-              if ((Rr(1,rl).ge.min(r(k,l),r(k-1,l))).and.(Rr(1,rl).lt.max(r(k,l),r(k-1,l))).and.(n_bot(k,l).lt.6)) then
+              if ((Rr(1,rl).ge.min(r(k,l),r(k-1,l))).and.(Rr(1,rl).lt.max(r(k,l),r(k-1,l))).and.(n_bot(k,l).lt.4)) then
 
                 !columns of Z
                  do zl = 1,Lz
