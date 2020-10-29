@@ -82,8 +82,8 @@ def show(state) :
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.nx_node*100])/1000, np.array([state.zmax, state.zmax+state.nz_node*100]), 'k-')
             #plt.plot(np.array([state.zmax_r, state.zmax_r+state.tx_node*100])/1000, np.array([state.zmax, state.zmax+state.tz_node*100]), 'k-')
             #plt.plot(state.r_bot/1000, state.z_bot, 'ko')
-            #for i in range(state.nr) :
-            #    plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]*100])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]*100]), 'm-')
+            for i in range(state.nr) :
+                plt.plot(np.array([state.r[:,i], state.r[:,i]+state.ray_x_bdy[:,i]])/1000, np.array([state.z[:,i], state.z[:,i]+state.ray_z_bdy[:,i]]), 'm-')
         """
         #plt.grid()
 

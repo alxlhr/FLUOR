@@ -52,7 +52,10 @@ def apply(i,state) :
 
             ds = recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy)
 
+        print(state.angle[i+1,:])
         loop.ray_step(i,zM,ds,state)
+        print(state.angle[i+1,:])
+        print()
 
         #If linterp, recalculate normals
         if state.bathy_linterp == 1 :
@@ -168,13 +171,17 @@ def recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
     de_0 = d0_r * nx_bt_bdy + d0_z * nz_bt_bdy
     de = d_r * nx_bt_bdy + d_z * nz_bt_bdy
 
-    dh = - de_0 / (-de_0 + de) * state.ds0[zM]
+    dh = de_0 / (de_0 + np.abs(de)) * state.ds0[zM]
     #dh[np.abs(de_0) < 1e-9] = 0
     #dh[np.abs(de) < 1e-9] = 0
 
     ds = np.zeros_like(state.ds0)
-    ds[zM] = dh#de_0 / (state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
+    ds[zM] = dh#de_0 / np.abs(state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
     #print(np.min((state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)))
+    #print(crossing_depth(state.r[i,zM],state.z[i,zM],state.r[i+1,zM],state.z[i+1,zM], state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]], state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]]))
+
+
+    #print(de)
 
     """
     if (np.any(ds < 0)) :

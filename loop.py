@@ -20,6 +20,7 @@ def ray_step(i,j,ds,state) :
     dcdr_1 = speed.get_der(state.f_interp,state.z[i,j],state.r[i,j],0,1, state.s_dim)
     dcdz_1 = speed.get_der(state.f_interp,state.z[i,j],state.r[i,j],1,0, state.s_dim)
 
+
     #k1
     dX_1 = - 1/state.C[i,j]**2 * dcdr_1
     dY_1 = - 1/state.C[i,j]**2 * dcdz_1
@@ -174,6 +175,7 @@ def ray_step(i,j,ds,state) :
 
     state.angle[i+1,j] = np.arctan((state.z[i+1,j] - state.z[i,j])/(state.r[i+1,j] - state.r[i,j]))
     state.angle[i+1,np.isnan(state.angle[i+1,:])] = np.pi/2
+
 
     #print('angle_ : ', (state.r[i+1,j] - state.r[i,j]))
 

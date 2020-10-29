@@ -31,7 +31,7 @@ def Munk_c(z,x):
         c = c.T
     #print('munk : ', np.shape(c))
 
-        return c#c0 * np.ones_like(z)
+        return c0 * np.ones_like(z)
 
 #https://stackoverflow.com/questions/20357854/how-can-i-generate-gaussian-random-process-using-matlab
 def randg(N,rL,h,cl) :
