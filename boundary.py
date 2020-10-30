@@ -2,6 +2,7 @@ import numpy as np
 import loop
 import speed
 import bdy_loss
+import matplotlib.pyplot as plt
 
 def apply(i,state) :
 
@@ -15,8 +16,48 @@ def apply(i,state) :
         tz_bt_bdy = np.zeros_like(state.z[i+1,:])
 
     elif state.rd_bathy == 1 :
-        #array (1,nr) avec les points min et max de la bathy
-        bthy_m = np.argmin(state.zmax_r[:,None] < state.r[i+1,:],axis = 0)-1
+
+        #bthy_m = np.argmin(state.zmax_r[:,None] < state.r[i+1,:],axis = 0)-1
+
+        bt_mp = np.argmin(state.zmax_r[:,None] < state.r[i+1,:],axis = 0)-1
+        bt_mm =  np.argmin(state.zmax_r[:,None] < state.r[i,:],axis = 0)-1
+        bt_mm[bt_mm < 0] = 0
+
+
+        if np.all(bt_mm == bt_mp) :
+            bthy_m = bt_mp.copy()
+
+        #calculate interp point
+        #check both segments, if it intercepts none, it doesn't cross the boundary
+        else :
+            [rb_m,zb_m] = crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:],
+            state.zmax_r[bt_mm], state.zmax[bt_mm], state.zmax_r[bt_mp], state.zmax[bt_mp])
+            [rb_p,zb_p] = crossing_depth(state.r[i,:],state.z[i,:],state.r[i+1,:],state.z[i+1,:],
+            state.zmax_r[bt_mp], state.zmax[bt_mp], state.zmax_r[bt_mp+1], state.zmax[bt_mp+1])
+
+            dist_r_m = rb_m - state.zmax_r[bt_mm]
+            dist_z_m = zb_m - state.zmax[bt_mm]
+            dray_m = dist_r_m*state.tx_bt_bdy[bt_mm] + dist_z_m*state.tz_bt_bdy[bt_mm] #distance along the ray
+            alpha_m = dray_m/state.bdy_dl[bt_mm]
+
+            dist_r_p = rb_p - state.zmax_r[bt_mp]
+            dist_z_p = zb_p - state.zmax[bt_mp]
+            dray_p = dist_r_p*state.tx_bt_bdy[bt_mp] + dist_z_p*state.tz_bt_bdy[bt_mp] #distance along the ray
+            alpha_p = dray_p/state.bdy_dl[bt_mp]
+
+            bthy_m = bt_mp.copy()
+            bthy_m[(alpha_m > 0) & (alpha_m < 1)] = bt_mm[(alpha_m > 0) & (alpha_m < 1)]
+            #bthy_m[(alpha_p > 0) & (alpha_p < 1)] = bt_mp[(alpha_p > 0) & (alpha_p < 1)]
+            """
+            print(alpha_m, alpha_p)
+            plt.plot(rb_p,zb_p,'ko')
+            plt.plot(state.zmax_r,state.zmax)
+            plt.ylim(np.max(state.zmax),0)
+            plt.show()
+            """
+
+
+            #bthy_m = bt_mp*(bt_mm == bt_mp) + bt_mm*(bt_mm != bt_mp)
         bthy_M = bthy_m + 1
 
         #depth at the point (interpolate between bthy_m and bthy_M)
@@ -37,6 +78,8 @@ def apply(i,state) :
     zm = (state.z[i+1,:] < state.zmin)
     indM = np.where(zM)[0]
     indm = np.where(zm)[0]
+
+
 
     state.bdy_bot[i+1,:] = state.bdy_bot[i,:] + np.ones((state.nr))*zM
     state.bdy_top[i+1,:] = state.bdy_top[i,:] + np.ones((state.nr))*zm
@@ -73,7 +116,7 @@ def apply(i,state) :
         alpha = state.tx[i+1,zM]*nx_bt_bdy + nz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary normal
         beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent (right handed coordinate system)
 
-        cn = dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
+        cn = -dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
         cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
 
         M = beta/alpha
@@ -167,7 +210,7 @@ def recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
     return ds
 
 def get_intersect(a1, a2, b1, b2):
-    """ 
+    """
     Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
     a1: [x, y] a point on the first line
     a2: [x, y] another point on the first line
@@ -184,6 +227,7 @@ def get_intersect(a1, a2, b1, b2):
     return (x/z, y/z)
 
 def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
+
     [rb,zb] = crossing_depth(state.r[i,zM],state.z[i,zM],state.r[i+1,zM],state.z[i+1,zM], state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]], state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]])
     """
     int_rb = np.zeros_like(zM)
@@ -197,7 +241,7 @@ def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
     for l in range(len(r1)) :
         [int_rb[l],int_zb[l]] = get_intersect(r1[l,:],r2[l,:],b1[l,:],b2[l,:])
     """
-    
+
     r_m = state.r[i,zM].copy()
     z_m = state.z[i,zM].copy()
     r_p = state.r[i+1,zM].copy()
@@ -206,7 +250,7 @@ def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
     dist_r = rb - r_m
     dist_z = zb - z_m
 
-    print(rb, zb)
+    #print(rb, zb)
 
     dray = dist_r*state.tx[i,zM] + dist_z*state.tz[i,zM] #distance along the ray
 
@@ -229,8 +273,8 @@ def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
     state.tz[i+1,zM] = state.C[i+1,zM]*state.Y[i+1,zM]
     state.nx[i+1,zM] = -state.C[i+1,zM]*state.Y[i+1,zM]
     state.nz[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
-    
-    
+
+
 
 
 def calculate_normals(state) :
@@ -249,9 +293,9 @@ def calculate_normals(state) :
 
     #get center of the bathy sections
 
-    dl = np.sqrt(dzmax**2 + drmax**2)
-    state.z_c = dl/2 * np.sin(alpha_r) + state.zmax[:-1]
-    state.r_c =  dl/2 * np.cos(alpha_r) + state.zmax_r[:-1]
+    state.bdy_dl = np.sqrt(dzmax**2 + drmax**2)
+    state.z_c = state.bdy_dl/2 * np.sin(alpha_r) + state.zmax[:-1]
+    state.r_c =  state.bdy_dl/2 * np.cos(alpha_r) + state.zmax_r[:-1]
 
     #Get normals at the nodes
 
@@ -310,6 +354,13 @@ def interpolate_normals(i, state, zM, bthy_m) :
 
 
 def crossing_depth(x1, y1, x2, y2, x3, y3, x4, y4) :
+    """
+    print()
+    print(x1,y1)
+    print(x2,y2)
+    print(x3,y3)
+    print(x4,y4)
+    """
 
     z_bot = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
     r_bot = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4) ) / ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4) )
