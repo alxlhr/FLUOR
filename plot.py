@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
-"""
+
 import os
 import sys
 import numpy as np
@@ -11,7 +11,7 @@ sys.path.append ("/home/alexandre/Documents/Stage_M2/Orlando_Python/at/Python/")
 from readshd import *
 from plotray import *
 from read_arrivals_asc import *
-"""
+
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "sans-serif",
@@ -29,7 +29,7 @@ def show(state) :
 
 
         #os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_OneBeam")
-        """
+
         os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Rays")
         fid = open('../Bellhop/MunkB_Rays.bty','r')
         theline = fid.readline()
@@ -46,9 +46,9 @@ def show(state) :
 
         rbty = rbtykm
 
-        #plotray('../Bellhop/MunkB_Rays.ray')
+        plotray('../Bellhop/MunkB_Rays.ray')
         #plot(rbty,zbty,'m',linewidth=2)
-        """
+
 
         #plt.figure(figsize = (10,8))
         #system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_ray")
@@ -58,9 +58,9 @@ def show(state) :
         #for i in range(state.nr) :
         #    if state.rays_int[i] == False :
         #        continue
-        plt.plot(state.r/1000,state.z,'r', linewidth = '1')
+        plt.plot(state.r/1000,state.z,'r--', linewidth = '1')
         #    print(i)
-        plt.plot(state.r/1000,state.z,'ro', linewidth = '1')
+        #plt.plot(state.r/1000,state.z,'ro', linewidth = '1')
         plt.xlabel('\\textbf{Range (km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
         plt.xticks(fontsize = 17)
@@ -68,6 +68,7 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
+        plt.grid()
 
         if state.rd_bathy == 1 :
 
@@ -115,48 +116,10 @@ def show(state) :
         """
 
     if state.exp == "TL" :
-        """
-        system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Code/MunkB_Coh_SGB")
 
-        filename = '../Code/MunkB_Coh_SGB.shd'
-
-        xs = np.nan
-        ys = np.nan
-        pressure,geometry = readshd(filename,xs,ys)
-
-        zs     = geometry["zs"]
-        rarray = geometry["rarray"]; rarraykm = rarray/1000
-        zarray = geometry["zarray"]
-
-        Dmax = zarray[-1]
-        rmax = rarray[-1]; rmaxkm = rmax/1000
-
-        p_b = np.squeeze( pressure, axis=(0,1) )
-        tl = -20*np.log10( abs( p_b ) )
-
-        tl[tl > 120.0] = 120.0
-
-        plt.figure(figsize = (10,8))
-        plt.imshow(tl,extent=[0,rmaxkm,0,Dmax],aspect='auto',cmap='jet_r',origin='lower',vmin=60,vmax=120)
-        cb = plt.colorbar()
-        cb.ax.invert_yaxis()
-        cb.ax.tick_params(labelsize=17)
-        cb.set_label('\\textbf{TL (dB)}', rotation=270, fontsize = 17, labelpad = 14)
-
-        plt.xlabel('Range (km)')
-        plt.ylabel('Depth (m)')
-        plt.title('\\textbf{Bellhop}', fontsize = 17, pad = 6)
-        plt.xlabel('\\textbf{Range (Km)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
-        plt.ylabel('\\textbf{Depth (m)}', fontsize = 17, fontweight = 'bold', labelpad = 10)
-        plt.xticks(fontsize = 17)
-        plt.yticks(fontsize = 17)
-        plt.tick_params(width = 2, length = 4)
-        plt.ylim(Dmax,0)
-        """
-        """
-        os.system("//home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
-        filename = '../Bellhop/MunkB_OneBeam.shd'
-        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
+        os.system("//home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/TL_Messina")
+        filename = '../Bellhop/TL_Messina.shd'
+        fid = open('../Bellhop/TL_Messina.bty','r')
         theline = fid.readline()
         theline = fid.readline()
         n       = int( theline )
@@ -186,7 +149,7 @@ def show(state) :
         tl = -20*np.log10( abs( p_b ) )
 
         tl[tl > 120.0] = 120.0
-        
+
 
         plt.figure(figsize = (10,8))
         plt.imshow(tl,extent=[0,rmaxkm,0,Dmax],aspect='auto',cmap='jet_r',origin='lower',vmin=40,vmax=120)
@@ -199,14 +162,15 @@ def show(state) :
         #plt.xlim(state.rmin,state.rmax/1000)
         plt.ylim(np.max(state.zmax),0)
         plt.xlim(0,state.rmax/1000)
-        """
+
+
         zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
         rr = np.linspace(state.rmin,state.rmax,state.Lr)
         R, Z = np.meshgrid(rr,zz)
 
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL, cmap = 'jet_r', vmin = 40, vmax = 120)#, shading = 'nearest')
-        #plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
+        #plt.plot(state.r[:,6]/1000, state.z[:,6],'k')
         cbar=plt.colorbar()
         cbar.ax.invert_yaxis()
         cbar.ax.tick_params(labelsize=17)
@@ -221,15 +185,10 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
 
         if state.rd_bathy == 1 :
-            plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '4')
+            plt.plot(state.zmax_r/1000, state.zmax,'m',linewidth = '1')
             #plt.plot(state.zmax_r/1000, state.zmax, 'ko')
 
-        plt.figure()
-        plt.plot(state.r[:,7], state.q[:,7],'k')
-        plt.figure()
-        plt.plot(state.r[:,7], state.p[:,7],'r')
 
-        """
         plt.figure(figsize = (10,8))
         plt.pcolor(R/1000,Z,state.TL - tl, cmap = 'bwr', vmin = -40, vmax = 40)
         #plt.plot(state.r[:,7]/1000, state.z[:,7],'k')
@@ -246,13 +205,13 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         if state.rd_bathy == 1 :
             plt.plot(state.zmax_r/1000, state.zmax,'k',linewidth = '4')
-        """
+
 
     if state.exp == 'A' :
-        """
-        os.system("/home6/lheral/Documents/Stage_M2/Bellhop/at/Bellhop/bellhop.exe ../Bellhop_exp/MunkB_Arr")
 
-        fid = open('../Bellhop_exp/MunkB_Arr.bty','r')
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Arr")
+
+        fid = open('../Bellhop/MunkB_Arr.bty','r')
         theline = fid.readline()
         theline = fid.readline()
         n       = int( theline )
@@ -297,12 +256,12 @@ def show(state) :
         plt.tick_params(width = 2, length = 4)
         plt.legend(prop={'size': 20, 'weight':'bold'}, loc = 'upper center')
         plt.grid()
-        """
+
         print('eigenrays : ', state.eigen_ray)
         #print('from bellhop : ',Narr)
         """
-        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_OneBeam")
-        fid = open('../Bellhop/MunkB_OneBeam.bty','r')
+        os.system("/home/alexandre/Documents/Stage_M2/Bellhop/at/at/Bellhop/bellhop.exe ../Bellhop/MunkB_Arr")
+        fid = open('../Bellhop/MunkB_Arr.bty','r')
         theline = fid.readline()
         theline = fid.readline()
         n       = int( theline )
@@ -323,7 +282,7 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax/1000)
         plt.plot(state.r_rcvr/1000,state.z_rcvr,'ro')
         """
-
+        """
         plt.figure()
         for i in range(state.eigen_ray) :
             #plt.plot(state.r[atten[:,i],i]/1000,state.z[atten[:,i],i],'k', linewidth = '1')
@@ -333,16 +292,16 @@ def show(state) :
         plt.xlim(state.rmin,state.rmax)
         plt.plot(state.zmax_r, state.zmax,'r',linewidth = '2')
         plt.plot(state.r_rcvr,state.z_rcvr,'ro')
-
+        """
         print(state.eigen_ray)
-
+        """
         plt.figure()
         plt.plot(state.r[:,state.ray_num],state.z[:,state.ray_num],'k', linewidth = '1')
         plt.plot(state.r_rcvr,state.z_rcvr,'ro')
         plt.ylim(np.max(state.zmax),state.zmin)
         plt.xlim(state.rmin,state.rmax)
         plt.plot(state.zmax_r, state.zmax,'r',linewidth = '2')
-
+        """
 
         plt.figure()
         plt.plot(state.Angle_rcvr[:state.eigen_ray], 20*np.log10(state.Amp_rcvr[:state.eigen_ray]/1e-6),'r*')

@@ -53,35 +53,35 @@ class core(object) :
         Y0 = np.sin(self.state.angle_0)/self.state.c0
 
         #Rays
-        self.state.X = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.Y = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.r = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.z = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.C = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.bdy_top = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.bdy_bot = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.ds0 = self.state.ds0 * np.ones((self.state.nr), dtype=np.longdouble)
+        self.state.X = np.zeros((self.state.n_max,self.state.nr))
+        self.state.Y = np.zeros((self.state.n_max,self.state.nr))
+        self.state.r = np.zeros((self.state.n_max,self.state.nr))
+        self.state.z = np.zeros((self.state.n_max,self.state.nr))
+        self.state.C = np.zeros((self.state.n_max,self.state.nr))
+        self.state.bdy_top = np.zeros((self.state.n_max,self.state.nr))
+        self.state.bdy_bot = np.zeros((self.state.n_max,self.state.nr))
+        self.state.ds0 = self.state.ds0 * np.ones((self.state.nr))
 
         """testing : """
-        self.state.ray_x_bdy = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.ray_z_bdy = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
+        self.state.ray_x_bdy = np.zeros((self.state.n_max,self.state.nr))
+        self.state.ray_z_bdy = np.zeros((self.state.n_max,self.state.nr))
 
         #TL
-        self.state.p = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.q = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.T = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.amp = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.phi = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.W = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.angle = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.m = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.dangle0 = np.zeros((self.state.nr), dtype=np.longdouble)
-        self.state.tx = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.tz = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.nx = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.nz = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.r_bot = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
-        self.state.z_bot = np.zeros((self.state.n_max,self.state.nr), dtype=np.longdouble)
+        self.state.p = np.zeros((self.state.n_max,self.state.nr))
+        self.state.q = np.zeros((self.state.n_max,self.state.nr))
+        self.state.T = np.zeros((self.state.n_max,self.state.nr))
+        self.state.amp = np.zeros((self.state.n_max,self.state.nr))
+        self.state.phi = np.zeros((self.state.n_max,self.state.nr))
+        self.state.W = np.zeros((self.state.n_max,self.state.nr))
+        self.state.angle = np.zeros((self.state.n_max,self.state.nr))
+        self.state.m = np.zeros((self.state.n_max,self.state.nr))
+        self.state.dangle0 = np.zeros((self.state.nr))
+        self.state.tx = np.zeros((self.state.n_max,self.state.nr))
+        self.state.tz = np.zeros((self.state.n_max,self.state.nr))
+        self.state.nx = np.zeros((self.state.n_max,self.state.nr))
+        self.state.nz = np.zeros((self.state.n_max,self.state.nr))
+        self.state.r_bot = np.zeros((self.state.n_max,self.state.nr))
+        self.state.z_bot = np.zeros((self.state.n_max,self.state.nr))
         self.state.rays_int = np.ones((self.state.nr), dtype = bool)
 
         self.state.X[0,:] = X0
@@ -108,7 +108,7 @@ class core(object) :
             b = 250e3
             c = 250
 
-            
+
             #self.state.zmax_r = np.array([0,1000,1000+1000*np.sqrt(2)/2])
             #print(1000+1000*np.sqrt(2)/2)
             #self.state.zmax_r = np.linspace(0,20e3,100)
@@ -120,7 +120,10 @@ class core(object) :
 
             #self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 500)
             #self.state.zmax = 0.002*b*np.sqrt(1 + self.state.zmax_r/c)
-            
+
+            #self.state.zmax_r = np.linspace(self.state.rmin, self.state.rmax, 500)
+            #self.state.zmax = 1200*np.ones_like(self.state.zmax_r)
+
             boundary.calculate_normals(self.state)
 
     def check_res(self) :
@@ -134,10 +137,9 @@ class core(object) :
         def_arr = np.ones_like(self.state.z[0,:],dtype = bool)
 
         for i in range(self.state.n_max-1) :
-            arr_int = def_arr #& self.state.rays_int
             if (i%100 == 0) :
                 print("%i / %i" %(i, self.state.n_max), end = '\r')
-            loop.ray_step(i,arr_int,self.state.ds0,self.state)
+            loop.ray_step(i,def_arr,self.state.ds0,self.state)
             caustics.step(i,self.state)
             boundary.apply(i,self.state)
             #gc.collect()

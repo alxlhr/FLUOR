@@ -47,17 +47,7 @@ def apply(i,state) :
 
             bthy_m = bt_mp.copy()
             bthy_m[(alpha_m > 0) & (alpha_m < 1)] = bt_mm[(alpha_m > 0) & (alpha_m < 1)]
-            #bthy_m[(alpha_p > 0) & (alpha_p < 1)] = bt_mp[(alpha_p > 0) & (alpha_p < 1)]
-            """
-            print(alpha_m, alpha_p)
-            plt.plot(rb_p,zb_p,'ko')
-            plt.plot(state.zmax_r,state.zmax)
-            plt.ylim(np.max(state.zmax),0)
-            plt.show()
-            """
 
-
-            #bthy_m = bt_mp*(bt_mm == bt_mp) + bt_mm*(bt_mm != bt_mp)
         bthy_M = bthy_m + 1
 
         #depth at the point (interpolate between bthy_m and bthy_M)
@@ -79,67 +69,82 @@ def apply(i,state) :
     indM = np.where(zM)[0]
     indm = np.where(zm)[0]
 
-
-
     state.bdy_bot[i+1,:] = state.bdy_bot[i,:] + np.ones((state.nr))*zM
     state.bdy_top[i+1,:] = state.bdy_top[i,:] + np.ones((state.nr))*zm
 
     #Bottom boundary
     if indM.size > 0 :
         if state.rd_bathy == 0 :
-            ds = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
+            ds = state.ds0.copy()
+            ds[zM] = (z_bot - state.z[i,zM]) / (state.C[i,zM]*state.Y[i,zM])
+            loop.ray_step(i,zM,ds,state)
+            nx_bt_bdy = nx_bt_bdy[zM]
+            nz_bt_bdy = nz_bt_bdy[zM]
+            tx_bt_bdy = tx_bt_bdy[zM]
+            tz_bt_bdy = tz_bt_bdy[zM]
+            kappa = np.zeros_like(nz_bt_bdy)
+            #print(ds)
         elif state.rd_bathy == 1 :
-            nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
-            nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
-
-            #ds = recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy)
-
-        #loop.ray_step(i,zM,ds,state)
-        reflexion_interp(state,zM,i,bthy_m, bthy_M)
-
-        #If linterp, recalculate normals
-        if state.bathy_linterp == 1 :
-            [nx_bt_bdy, nz_bt_bdy] = interpolate_normals(i, state,zM, bthy_m)
+            if state.bathy_linterp == 1 :
+                reflexion_interp(state,zM,i,bthy_m, bthy_M)
+                [nx_bt_bdy, nz_bt_bdy,tx_bt_bdy, tz_bt_bdy, kappa] = interpolate_normals(i, state,zM, bthy_m)
+            elif state.bathy_linterp == 0 :
+                reflexion_interp(state,zM,i,bthy_m, bthy_M)
+                nx_bt_bdy = state.nx_bt_bdy[bthy_m[zM]]
+                nz_bt_bdy = state.nz_bt_bdy[bthy_m[zM]]
+                tx_bt_bdy = state.tx_bt_bdy[bthy_m[zM]]
+                tz_bt_bdy = state.tz_bt_bdy[bthy_m[zM]]
+                kappa = np.zeros_like(nx_bt_bdy)
+            else :
+                raise ValueError('Bad bathy interpolation option')
 
         dcdr = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],0,1, state.s_dim)
         dcdz = speed.get_der(state.f_interp,state.z[i+1,zM],state.r[i+1,zM],1,0, state.s_dim)
 
-        tx_bt_bdy = -nz_bt_bdy
-        tz_bt_bdy = nx_bt_bdy
-
         #tangent : c * (X,Y)
         #normal :  c * (-Y,X)
 
-        #z increases downwards
-
         #Incident
         alpha = state.tx[i+1,zM]*nx_bt_bdy + nz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary normal
-        beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent (right handed coordinate system)
+        beta = tx_bt_bdy*state.tx[i+1,zM] + tz_bt_bdy*state.tz[i+1,zM] #t_ray * boundary tangent
 
-        cn = -dcdz * state.nz[i+1,zM] + dcdr * state.nx[i+1,zM]
-        cs = dcdz * state.tz[i+1,zM] + dcdr * state.tx[i+1,zM]
+#        print(tz_bt_bdy)
 
-        M = beta/alpha
-        N = M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
+        nz_prev = state.nz[i+1,zM]
+        nx_prev = state.nx[i+1,zM]
+        tz_prev = state.tz[i+1,zM]
+        tx_prev = state.tx[i+1,zM]
+
+        #print(cn)
 
         #Reflected
-        #state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
-        #state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
-
-        state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
-        state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
+        state.Y[i+1,zM] = state.Y[i+1,zM] - 2 * alpha * nz_bt_bdy / state.C[i+1,zM]
+        state.X[i+1,zM] = state.X[i+1,zM] - 2 * alpha * nx_bt_bdy / state.C[i+1,zM]
+        #state.X[i+1,zM] = (- alpha * nx_bt_bdy + beta * tx_bt_bdy) / state.C[i+1,zM]
+        #state.Y[i+1,zM] = (- alpha * nz_bt_bdy + beta * tz_bt_bdy) / state.C[i+1,zM]
 
         state.tx[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
         state.tz[i+1,zM] = state.C[i+1,zM]*state.Y[i+1,zM]
         state.nx[i+1,zM] = -state.C[i+1,zM]*state.Y[i+1,zM]
         state.nz[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
 
+        cn = dcdz * (nz_prev - state.nz[i+1,zM]) + dcdr * (nx_prev - state.nx[i+1,zM])
+        cs = dcdz * (tz_prev - state.tz[i+1,zM]) + dcdr * (tx_prev - state.tx[i+1,zM])
+
+        #cn = dcdz * ( - state.nz[i+1,zM])
+
+        M = beta/alpha
+        N = 2*kappa / (alpha * state.C[i+1,zM]**2) + M * (4*cn - 2*M*cs)/state.C[i+1,zM]**2
+
+        #if zM[6] == True :
+        #    print(tz_bt_bdy)
+
         #Ray normal and tangent
         theta_I = state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy
 
         q_prev = state.q[i+1,zM].copy()
         state.q[i+1,zM] = q_prev
-        state.p[i+1,zM] = state.p[i+1,zM] + q_prev * N
+        state.p[i+1,zM] = state.p[i+1,zM] + q_prev * np.abs(N)
 
 
         #boundary losses
@@ -188,7 +193,7 @@ def apply(i,state) :
         state.q[i+1,zm] = q_prev
         state.p[i+1,zm] = state.p[i+1,zm] + q_prev * N
 
-
+"""
 def recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
 
     d0_r = state.r[i,zM] - state.zmax_r[bthy_m[zM]]
@@ -201,61 +206,24 @@ def recalculate_step(state, i, zM, bthy_m, bthy_M, nx_bt_bdy, nz_bt_bdy) :
     de = d_r * nx_bt_bdy + d_z * nz_bt_bdy
 
     dh = de_0 / (de_0 + np.abs(de)) * state.ds0[zM]
-    #dh[np.abs(de_0) < 1e-9] = 0
-    #dh[np.abs(de) < 1e-9] = 0
 
     ds = np.zeros_like(state.ds0)
     ds[zM] = dh#de_0 / np.abs(state.tx[i+1,zM]*nx_bt_bdy + state.tz[i+1,zM]*nz_bt_bdy)
 
     return ds
-
-def get_intersect(a1, a2, b1, b2):
-    """
-    Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
-    a1: [x, y] a point on the first line
-    a2: [x, y] another point on the first line
-    b1: [x, y] a point on the second line
-    b2: [x, y] another point on the second line
-    """
-    s = np.vstack([a1,a2,b1,b2])        # s for stacked
-    h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
-    l1 = np.cross(h[0], h[1])           # get first line
-    l2 = np.cross(h[2], h[3])           # get second line
-    x, y, z = np.cross(l1, l2)          # point of intersection
-    if z == 0:                          # lines are parallel
-        return (float('inf'), float('inf'))
-    return (x/z, y/z)
-
+"""
 def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
 
     [rb,zb] = crossing_depth(state.r[i,zM],state.z[i,zM],state.r[i+1,zM],state.z[i+1,zM], state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]], state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]])
-    """
-    int_rb = np.zeros_like(zM)
-    int_zb = np.zeros_like(zM)
 
-    r1 = np.array([state.r[i,zM],state.z[i,zM]])
-    r2 = np.array([state.r[i+1,zM],state.z[i+1,zM]])
-    b1 = np.array([state.zmax_r[bthy_m[zM]], state.zmax[bthy_m[zM]]])
-    b2 = np.array([state.zmax_r[bthy_M[zM]], state.zmax[bthy_M[zM]]])
+    dist_r = rb - state.r[i,zM]
+    dist_z = zb - state.z[i,zM]
 
-    for l in range(len(r1)) :
-        [int_rb[l],int_zb[l]] = get_intersect(r1[l,:],r2[l,:],b1[l,:],b2[l,:])
-    """
+    dray = np.sqrt(dist_r**2 + dist_z**2) #distance along the ray
 
-    r_m = state.r[i,zM].copy()
-    z_m = state.z[i,zM].copy()
-    r_p = state.r[i+1,zM].copy()
-    z_p = state.z[i+1,zM].copy()
-
-    dist_r = rb - r_m
-    dist_z = zb - z_m
-
-    #print(rb, zb)
-
-    dray = dist_r*state.tx[i,zM] + dist_z*state.tz[i,zM] #distance along the ray
-
-    alpha = dray/state.ds0[zM] #linterp coef
-    alpha[alpha > 1] = 1
+    alpha = 1 - dray/state.ds0[zM] #linterp coef
+    #alpha[alpha > 1] = 1
+    #alpha = 1 - alpha
 
     state.r[i+1,zM] = rb
     state.z[i+1,zM] = zb
@@ -268,14 +236,13 @@ def reflexion_interp(state,zM,i,bthy_m, bthy_M) :
 
     state.T[i+1,zM] = state.T[i,zM]*alpha + (1-alpha)*state.T[i+1,zM]
     state.angle[i+1,zM] = np.arctan((state.z[i+1,zM] - state.z[i,zM])/(state.r[i+1,zM] - state.r[i,zM]))
+    state.angle[i+1,np.isnan(state.angle[i+1,:])] = np.pi/2
+    state.C[i+1,zM] = speed.get_speed(state.z[i+1,zM], state.r[i+1,zM], state.f_interp, state.s_dim)
 
     state.tx[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
     state.tz[i+1,zM] = state.C[i+1,zM]*state.Y[i+1,zM]
     state.nx[i+1,zM] = -state.C[i+1,zM]*state.Y[i+1,zM]
     state.nz[i+1,zM] = state.C[i+1,zM]*state.X[i+1,zM]
-
-
-
 
 def calculate_normals(state) :
 
@@ -288,8 +255,8 @@ def calculate_normals(state) :
     state.nx_bt_bdy = np.sin(alpha_r)
     state.nz_bt_bdy = -np.cos(alpha_r) #z > 0 upward
 
-    state.tx_bt_bdy = -state.nz_bt_bdy
-    state.tz_bt_bdy = state.nx_bt_bdy
+    state.tx_bt_bdy = state.nz_bt_bdy
+    state.tz_bt_bdy = -state.nx_bt_bdy #(t,n,y) must form a right handed coordinate system, y going towards the screen
 
     #get center of the bathy sections
 
@@ -322,8 +289,14 @@ def calculate_normals(state) :
     state.nx_node = state.nx_node / norm
     state.nz_node = state.nz_node / norm
 
-    state.tx_node = -state.nz_node
-    state.tz_node = state.nx_node
+    state.tx_node = state.nz_node
+    state.tz_node = -state.nx_node
+
+    normal_angle = np.arctan(state.nz_node/np.abs(state.nx_node))
+    dist_nodes = np.sqrt((state.zmax_r[1:] - state.zmax_r[:-1])**2 + (state.zmax[1:] - state.zmax[:-1])**2)
+
+    state.kappa = np.zeros_like(state.zmax_r)
+    state.kappa[:-1] = np.diff(normal_angle)/dist_nodes
 
 def interpolate_normals(i, state, zM, bthy_m) :
 
@@ -331,7 +304,7 @@ def interpolate_normals(i, state, zM, bthy_m) :
     #zM : number of bounces nbounce < nray (nbounce,)
     #bthy_m[zM] : section where the bounce occurs (nbounce,)
     #nx_bt_bdy[bthy[zM]] : normal of the section where the bounce occurs (nbounce,)
-
+    #print(zM)
     #distance between the two nodes
     dist_nodes = np.sqrt((state.zmax_r[bthy_m[zM]] - state.zmax_r[bthy_m[zM]+1])**2 + (state.zmax[bthy_m[zM]] - state.zmax[bthy_m[zM]+1])**2)
 
@@ -339,8 +312,12 @@ def interpolate_normals(i, state, zM, bthy_m) :
     dist_m = np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]])**2+(state.z[i+1,zM] - state.zmax[bthy_m[zM]])**2)  #(zM,)
     dist_p =  np.sqrt((state.r[i+1,zM] - state.zmax_r[bthy_m[zM]+1])**2+(state.z[i+1,zM] - state.zmax[bthy_m[zM]+1])**2)  #(zM,)
 
-    nx_bt_bdy = state.nx_node[bthy_m[zM]] * (dist_p / dist_nodes) + state.nx_node[bthy_m[zM]+1] * (1-dist_p  / dist_nodes)
-    nz_bt_bdy = state.nz_node[bthy_m[zM]] * (dist_p / dist_nodes) + state.nz_node[bthy_m[zM]+1] * (1-dist_p  / dist_nodes)
+    #linear interpolation
+    nx_bt_bdy = state.nx_node[bthy_m[zM]+1] * (1-dist_p / dist_nodes) + state.nx_node[bthy_m[zM]] * (dist_p  / dist_nodes)
+    nz_bt_bdy = state.nz_node[bthy_m[zM]+1] * (1-dist_p / dist_nodes) + state.nz_node[bthy_m[zM]] * (dist_p  / dist_nodes)
+    tx_bt_bdy = state.tx_node[bthy_m[zM]+1] * (1-dist_p / dist_nodes) + state.tx_node[bthy_m[zM]] * (dist_p  / dist_nodes)
+    tz_bt_bdy = state.tz_node[bthy_m[zM]+1] * (1-dist_p / dist_nodes) + state.tz_node[bthy_m[zM]] * (dist_p  / dist_nodes)
+    kappa = state.kappa[bthy_m[zM]+1] * (1-dist_p / dist_nodes) + state.kappa[bthy_m[zM]] * (dist_p  / dist_nodes)
 
     norm = np.sqrt(nx_bt_bdy**2 + nz_bt_bdy**2)
 
@@ -350,18 +327,11 @@ def interpolate_normals(i, state, zM, bthy_m) :
     state.ray_x_bdy[i+1,zM] = nx_bt_bdy
     state.ray_z_bdy[i+1,zM] = nz_bt_bdy
 
-    return nx_bt_bdy, nz_bt_bdy
+    return nx_bt_bdy, nz_bt_bdy, tx_bt_bdy, tz_bt_bdy, kappa
 
 
 def crossing_depth(x1, y1, x2, y2, x3, y3, x4, y4) :
-    """
-    print()
-    print(x1,y1)
-    print(x2,y2)
-    print(x3,y3)
-    print(x4,y4)
-    """
-
+    "From wikipedia"
     z_bot = ((x1*y2 - y1*x2)*(y3 - y4) - (y1 - y2)*(x3*y4 - y3*x4)) / ((x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4))
     r_bot = ((x1*y2 - y1*x2)*(x3 - x4) - (x1 - x2)*(x3*y4 - y3*x4) ) / ((x1 - x2)*(y3 - y4) - (y1 - y2)*(x3 - x4) )
     return r_bot,z_bot

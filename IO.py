@@ -8,7 +8,7 @@ def save(state, params) :
         #dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/2D_arr/'
     #else :
         #dir = '/media/alexandre/DATA/Stage_M2/exp/arrivals/dist_z/rec_c_500_100_n3/'
-    dir = '/media/alexandre/DATA/PreThese/Arrivals/Test0/'
+    dir = '/media/alexandre/DATA/PreThese/Arrivals/Full_C/'
 
     if (path.exists(dir) == False) :
         os.mkdir(dir)
@@ -25,6 +25,7 @@ def save(state, params) :
     n_points = ncout.createDimension('n_points', state.n_max)
     Lr = ncout.createDimension('Lr', state.Lr)
     Lz = ncout.createDimension('Lz', state.Lz)
+    cz = ncout.createDimension('cz', len(state.c_bk))
 
 
     #parameters
@@ -34,12 +35,13 @@ def save(state, params) :
 
     #Celerities
     if state.s_dim == 1 :
-        C_bkgnd = ncout.createVariable('C_bkgnd', state.c_bk.dtype, dimensions=('Lz'))
+        C_bkgnd = ncout.createVariable('C_bkgnd', state.c_bk.dtype, dimensions=('cz'))
     elif state.s_dim == 2 :
         C_bkgnd = ncout.createVariable('C_bkgnd', state.c_bk.dtype, dimensions=('Lz','Lr'))
     C_rays = ncout.createVariable('C_rays', state.C.dtype, dimensions=('n_points','n_rays'))
 
-    C_bkgnd[...] = state.c_bk[:-1]
+
+    C_bkgnd[...] = state.c_bk
     C_rays[...] = state.C
 
     if state.rd_bathy == 1 :
@@ -52,6 +54,7 @@ def save(state, params) :
     #Ray variables
 
     if state.exp != 'A' :
+        #n_eigen = ncout.createDimension('n_eigen', state.eigen_ray)
 
         X = ncout.createVariable('X', state.X.dtype, dimensions=('n_points','n_rays'))
         Y = ncout.createVariable('Y', state.Y.dtype, dimensions=('n_points','n_rays'))
@@ -67,8 +70,8 @@ def save(state, params) :
         tz = ncout.createVariable('tz', state.tz.dtype, dimensions=('n_points','n_rays'))
         nx = ncout.createVariable('nx', state.nx.dtype, dimensions=('n_points','n_rays'))
         nz = ncout.createVariable('nz', state.nz.dtype, dimensions=('n_points','n_rays'))
-        bdy_bot = ncout.createVariable('bdy_bot', state.nz.dtype, dimensions=('n_points','n_eigen'))
-        bdy_top = ncout.createVariable('bdy_top', state.nz.dtype, dimensions=('n_points','n_eigen'))
+        #bdy_bot = ncout.createVariable('bdy_bot', state.nz.dtype, dimensions=('n_points','n_eigen'))
+        #bdy_top = ncout.createVariable('bdy_top', state.nz.dtype, dimensions=('n_points','n_eigen'))
 
 
         X[...] = state.X
@@ -85,8 +88,8 @@ def save(state, params) :
         tz[...] = state.tz
         nx[...] = state.nx
         nz[...] = state.nz
-        bdy_bot[...] = state.bdy_bot
-        bdy_top[...] = state.bdy_top
+        #bdy_bot[...] = state.bdy_bot
+        #bdy_top[...] = state.bdy_top
 
     #TL
     if state.exp == 'TL' :
@@ -148,3 +151,5 @@ def save(state, params) :
         nz[...] = state.nz[:,state.ray_num]
         bdy_bot[...] = state.bdy_bot[:,state.ray_num]
         bdy_top[...] = state.bdy_top[:,state.ray_num]
+
+    ncout.close()

@@ -1,4 +1,5 @@
 import numpy as np
+import fortran_arr as farr
 
 def calc_arr(state) :
     state.W = np.abs(state.q * state.dangle0[np.newaxis,:])
@@ -9,11 +10,15 @@ def calc_arr(state) :
     #state.Amp_rays = np.zeros((state.nr), dtype = complex)
     state.ray_num = np.zeros((state.nr), dtype = np.int32)
 
-
     state.eigen_ray = 0
 
     loop(state)
-
+    """
+    print(20*np.log10(state.Amp_rcvr/1e-6))
+    print(state.eigen_ray)
+    print(state.ray_num)
+    """
+    state.Angle_rcvr = np.rad2deg(state.Angle_rcvr)
     n_arr = state.Angle_rcvr[:state.eigen_ray]
     state.Angle_rcvr = n_arr
 
@@ -70,3 +75,5 @@ def loop(state) :
 
                         state.eigen_ray = state.eigen_ray + 1
 """
+def loop(state) :
+    state.eigen_ray = farr.loop(w = state.W, r_rcvr = state.r_rcvr, z_rcvr = state.z_rcvr, r = state.r, z = state.z, nx = state.nx, nz = state.nz, tx = state.tx, tz = state.tz, t = state.T, q = state.q, f = state.f, phi = state.phi, c0 = state.c0,angle = state.angle,m = state.m,amp = state.amp,c = state.C,amp_rcvr = state.Amp_rcvr,ray_num = state.ray_num,angle_rcvr = state.Angle_rcvr,delay_rcvr = state.Delay_rcvr)

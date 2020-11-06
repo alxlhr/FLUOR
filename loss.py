@@ -18,16 +18,21 @@ def calc_TL(state) :
     zz = np.linspace(state.zmin,np.max(state.zmax),state.Lz)
     rr = np.linspace(state.rmin,state.rmax,state.Lr)
     R, Z = np.meshgrid(rr,zz)
-
+    """
     if state.use_fortran == 1 :
         #floss.loop(state.W, R, Z, state.r, state.z, state.nx, state.nz, state.tz, state.T, state.q, state.P)
-        state.P = floss.loop(q = state.q, t = state.T, tz = state.tz, nz = state.nz, nx = state.nx, z = state.z, r = state.r, zz = Z, rr = R, w = state.W, lr = state.Lr, lz = state.Lz, nr = state.nr, nmax = state.n_max, f = state.f)
+        #state.P = floss.loop(q = state.q, t = state.T, tz = state.tz, nz = state.nz, nx = state.nx, z = state.z, r = state.r, zz = Z, rr = R, w = state.W, lr = state.Lr, lz = state.Lz, nr = state.nr, nmax = state.n_max, f = state.f)
     else :
-        loop(state)
+    """
+    loop(state)
 
     state.TL = -20*np.log10(4*np.pi*np.abs(state.P))
     state.TL[np.isnan(state.TL)] = 120
     state.TL[np.isinf(state.TL)] = 120
+    """
+    state.TL = np.abs(state.P)
+    """
+
 
 """
 #@jit(nopython = True)#, parallel = True)
@@ -46,37 +51,36 @@ def loop(state) :
     n_val = np.zeros_like(R)
     A_ = np.zeros_like(R, dtype=complex)
 
-    j = 7
+    j = 2
     #for j in range(state.nr) :
     print("beam %i / %i" %(j, state.nr), end = '\r')
-    if (state.rays_int[j] == True) :
-        for i in range(2,state.n_max-1) :
-            if state.W[i,j] > 0:
-                #coords influenced by the ray j between i and i+1
-                rec[:,:] = ((R >= state.r[i,j]) & (R < state.r[i+1,j]))
-                #normal distance all the points and segment i
+    for i in range(2,state.n_max-1) :
+        if state.W[i,j] > 0:
+            #coords influenced by the ray j between i and i+1
+            rec[:,:] = ((R >= state.r[i,j]) & (R < state.r[i+1,j]))
+            #normal distance all the points and segment i
 
-                n_[:,:] = np.abs( (R - state.r[i,j])*state.nx[i,j] + (Z - state.z[i,j])*state.nz[i,j])
+            n_[:,:] = np.abs( (R - state.r[i,j])*state.nx[i,j] + (Z - state.z[i,j])*state.nz[i,j])
 
-                #print(np.shape(n_))
-                #along ray coordinate
-                #s_[:,:] = (R - state.r[i-1,j])*state.tx[i-1,j] + (Z - state.z[i-1,j])*state.tz[i-1,j]
+            #print(np.shape(n_))
+            #along ray coordinate
+            #s_[:,:] = (R - state.r[i-1,j])*state.tx[i-1,j] + (Z - state.z[i-1,j])*state.tz[i-1,j]
 
-                al[:,:] = ((R - state.r[i-1,j])*state.tx[i-1,j] + (Z - state.z[i-1,j])*state.tz[i-1,j]) / np.sqrt((state.r[i-1,j] - state.r[i,j])**2 + (state.z[i-1,j] - state.z[i,j])**2)
+            al[:,:] = ((R - state.r[i-1,j])*state.tx[i-1,j] + (Z - state.z[i-1,j])*state.tz[i-1,j]) / np.sqrt((state.r[i-1,j] - state.r[i,j])**2 + (state.z[i-1,j] - state.z[i,j])**2)
 
-                T_[:,:] = state.T[i-1,j] + np.nan_to_num(al) * (state.T[i,j] - state.T[i-1,j])
-                q_[:,:] = state.q[i-1,j] + np.nan_to_num(al) * (state.q[i,j] - state.q[i-1,j])
-                W_ = state.W[i,j] #+ al * (state.W[i,j] - state.W[i-1,j])
-                r_[:,:] = state.r[i-1,j] + np.nan_to_num(al) * (state.r[i,j] - state.r[i-1,j])
+            T_[:,:] = state.T[i-1,j] + np.nan_to_num(al) * (state.T[i,j] - state.T[i-1,j])
+            q_[:,:] = state.q[i-1,j] + np.nan_to_num(al) * (state.q[i,j] - state.q[i-1,j])
+            W_ = state.W[i,j] #+ al * (state.W[i,j] - state.W[i-1,j])
+            r_[:,:] = state.r[i-1,j] + np.nan_to_num(al) * (state.r[i,j] - state.r[i-1,j])
 
-                n_val[:,:] = (W_ - n_*rec)/W_*rec
-                n_val[n_val < 0] = 0
+            n_val[:,:] = (W_ - n_*rec)/W_*rec
+            n_val[n_val < 0] = 0
 
-                A_[:,:] = state.amp[i,j] * 1/(4*np.pi) * (-1j)**state.m[i,j] * np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))
+            A_[:,:] = state.amp[i,j] * 1/(4*np.pi) * (-1j)**state.m[i,j] * np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))
 
-                print(np.max(np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))))
+            #print(np.max(np.sqrt(np.abs(state.C[i,j]*np.cos(state.angle_0[j])/(r_*state.c0*q_)))))
 
-                state.P = state.P + n_val * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j])
+            state.P = state.P + n_val * A_ * np.exp(1j*2*np.pi*state.f*T_)*np.exp(1j*state.phi[i,j])
 """
 """
 @jit(parallel = True)

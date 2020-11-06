@@ -17,17 +17,16 @@ from plotray import *
 #available exp : "TL", "R", "A"
 
 def run() :
-    for i in range(1) :
-        i = 3
-
+    for i in range(0,30) :
+        #i = 3
         print("Run " + str(i))
         print("####################")
 
-        nr = 2000
+        nr = 6000
 
         param = {'nr' : nr, 'z0' : 10, 'zmin' : 0, 'rmin' : 0, 'rmax' : 20e3, 'zmax' : 1200,
-                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 12, 'f' : 1000, 'Lr' : 400, 'Lz' : 400,
-                 'exp' : "TL",
+                 'r0' : 0, 'angles' : (-20,20), 'ds0' : 10, 'f' : 1000, 'Lr' : 500, 'Lz' : 500,
+                 'exp' : "A",
                  'r_rcvr' : 18e3, 'z_rcvr' : 100,
                  'compare_Bellhop' : 0, #Needs access to Bellhop, set it to False (0) if you trust this code
                  'speed_rand' : 0,
@@ -37,9 +36,9 @@ def run() :
                  'speed_Lz' : 100,
                  'speed_dim' : 1,
                  #'savefile' : "mcrun_"+str(i),
-                 'savefile' : 'FLUOR_Bathy_'+str(i),
-                 'plot' : 1, #When looping, should be set to 0
-                 'save' : 0,
+                 'savefile' : 'FLUOR_C_'+str(i),
+                 'plot' : 0, #When looping, should be set to 0
+                 'save' : 1,
                  'exp_ind' : i,
                  'mean_prof' : 0,
                  'load_c' : 1,
