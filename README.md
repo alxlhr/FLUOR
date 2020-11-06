@@ -5,6 +5,7 @@ How to run :
 
 Compile the fortran subroutines with :
 f2py -c -m fortran_loss fortran_loss.f90 
+/
 f2py -c -m fortran_arr fortran_arr.f90
 
 Edit the user.py file to your needs, and run it.
